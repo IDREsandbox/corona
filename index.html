@@ -81,9 +81,9 @@
 	</div>
 </div> 
 
-<!-- date display -->
+<!-- data display -->
 <div class="col-sm-12" align="center" style="position:absolute; bottom:20px;z-index:999;">
-	<div align="center" class="col-sm-1" style=" background-color:rgba(255,255,255,0.7);padding:10px;">
+	<div align="center" class="col-sm-2" style=" background-color:rgba(255,255,255,0.7);padding:5px;">
 		<p style='text-align:center' id="datedisplay">Date</p>
 
 		<!-- <button type="button" class="btn btn-danger btn-sm" onclick="corona.animate()">play</button> -->
@@ -96,11 +96,11 @@
  -->
 
 	</div>
-	<br>
+	<div style="padding:5px;">
 
-	<button id="btn-confirmed" disabled type="button" class="btn btn-light btn-sm" onclick="corona.changeDataLabel('confirmed cases')">confirmed<img src="images/icons/arrow-bar-right.svg" alt="" width="16" height="16" title="Bootstrap"></button>
-	<button id="btn-deaths" type="button" class="btn btn-light btn-sm" onclick="corona.changeDataLabel('deaths')">deaths<img src="images/icons/arrow-bar-right.svg" alt="" width="16" height="16" title="Bootstrap"></button>
-
+		<button id="btn-confirmed" disabled type="button" class="btn btn-light btn-sm" onclick="corona.changeDataLabel('confirmed cases')">confirmed<img src="images/icons/arrow-bar-right.svg" alt="" width="16" height="16" title="Bootstrap"></button>
+		<button id="btn-deaths" type="button" class="btn btn-light btn-sm" onclick="corona.changeDataLabel('deaths')">deaths<img src="images/icons/arrow-bar-right.svg" alt="" width="16" height="16" title="Bootstrap"></button>
+	</div>
 </div>
 
 <!-- time bar -->

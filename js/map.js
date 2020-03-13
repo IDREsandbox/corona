@@ -255,15 +255,12 @@ function getMaxData()
 	return maxdata
 }
 
-function getMaxDataByDate(date)
+function getTotalByDate(date)
 {
 	var maxdata = 0
 	// find max num in all of the data
 	$.each(corona.data.covid_time_series[date],function(i,val){
-		if(parseInt(val[4])>maxdata)
-		{
-			maxdata = parseInt(val[4])
-		}
+			maxdata =  maxdata + parseInt(val[4])
 	})
 
 	return maxdata
@@ -315,9 +312,9 @@ corona.currentDate = ''
 corona.mapCoronaData = function(date)
 {
 	corona.currentDate = date
-	$('#datedisplay').html('<h1>'+getMaxDataByDate(date)+'</h1>'+corona.data_label+' on '+date)
+	$('#datedisplay').html('<h1>'+getTotalByDate(date)+'</h1>'+corona.data_label+' on '+date)
 	// get max of currrent date
-	getMaxDataByDate(date)
+	getTotalByDate(date)
 	// remove circles
 	for (var i = corona.circles.length - 1; i >= 0; i--) {
 		if(corona.circles[i] !== undefined)
@@ -363,7 +360,7 @@ corona.setTimebar = function()
 
 	$("#timebar").ionRangeSlider({
 
-		skin: 	"sharp",
+		skin: 	"round",
 		from: 	0,
 		grid: 	true,
 		step:	1,
