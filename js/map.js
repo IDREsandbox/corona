@@ -59,7 +59,8 @@ corona.getData = function()
 				headers.unshift(corona.data.covid_time_series.data[0][i])
 			}
 			corona.data.covid_time_series.headers = headers
-
+			// update last updated
+			$('#last-updated').html('Last updated: '+corona.data.covid_time_series.headers[corona.data.covid_time_series.headers.length-1])
 			// cycle through results
 			for (var i = results.data[0].length - 1; i >= 0; i--) {
 				
@@ -347,7 +348,7 @@ corona.mapCoronaData = function(date)
 			};
 
 			corona.circles[i] = L.circleMarker([val[2], val[3]], circleStyle).addTo(corona.map);			
-			corona.circles[i].bindPopup('<h2>'+val[4]+'</h2>'+val[0]+' '+val[1])
+			corona.circles[i].bindPopup('<h2>'+val[4]+' '+corona.data_label+'</h2>'+val[0]+' '+val[1])
 			corona.circles[i].on('mouseover',function(e){
 				this.openPopup()
 			})
