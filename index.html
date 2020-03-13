@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+	<title>UCLA Corona Map</title>
+
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- leaflet  -->
+	<link rel="stylesheet" href="css/leaflet.css" />
+	<script src="js/leaflet.js"></script>
+
+	<!-- google fonts -->
+	<link href="https://fonts.googleapis.com/css?family=Economica&display=swap" rel="stylesheet">
+
+
+<!--Plugin CSS file with desired skin-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/css/ion.rangeSlider.min.css"/>
+    
+    <!--jQuery-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    
+    <!--Plugin JavaScript file-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/js/ion.rangeSlider.min.js"></script>
+ 	<!-- jQuery -->
+	<!-- <script src="js/jquery-1.10.2.js"></script> -->
+	<script src="js/moment.js"></script>
+	<script src="js/papaparse.min.js"></script>
+	<!-- <script src="js/jquery-csv.js"></script> -->
+	<!-- <script src="js/topojson.v1.min.js"></script> -->
+
+
+
+	<!-- rangeSlider
+	<script src="js/rangeSlider/js/ion-rangeSlider/ion.rangeSlider.min.js"></script>
+	<link rel="stylesheet" href="js/rangeSlider/css/ion.rangeSlider.css" />
+	<link rel="stylesheet" href="js/rangeSlider/css/ion.rangeSlider.skinFlat.css" />
+ -->
+	<!-- bootstrap -->
+
+
+	<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js" integrity="sha384-xrRywqdh3PHs8keKZN+8zzc5TX0GRTLCcmivcbNJWm2rs5C8PRhcEn3czEjhAO9o" crossorigin="anonymous"></script>
+
+
+	<!-- charts -->
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
+    <script src="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
+
+	<link rel="stylesheet" href="styles/style.css">
+
+</head>
+<body>
+
+<div class="container-fluid h-100">
+	<!-- <div class="row h-100" style="padding-top:56px"> -->
+	<div class="row h-100" >
+		<!-- left side: map -->
+		<div class="col-sm-12 fill no-padding">
+			<div id="map"></div>
+			<!-- <div class='nav-overlay'></div> -->
+		</div>
+	</div>
+</div>
+
+<!-- todokedori logo -->
+
+<div class="col-sm-2" id="data-panel" style="position: absolute;top:20px;left: 10px;background-color: rgba(255,255,255,0.8);z-index:999;">
+
+	<h2>UCLA Sandbox Coronavirus Map</h2>
+	<p id="info-panel">
+
+		Data Source:
+		<br>
+		<a href="https://github.com/CSSEGISandData/COVID-19/blob/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv" target="_blank">2019 Novel Coronavirus COVID-19 (2019-nCoV) Data Repository by Johns Hopkins CSSE</a>
+
+
+	</div>
+</div> 
+
+<!-- date display -->
+<div class="col-sm-12" align="center" style="position:absolute; bottom:20px;z-index:999;">
+	<div align="center" class="col-sm-1" style=" background-color:rgba(255,255,255,0.7);padding:10px;">
+		<p style='text-align:center' id="datedisplay">Date</p>
+
+		<!-- <button type="button" class="btn btn-danger btn-sm" onclick="corona.animate()">play</button> -->
+
+
+<!-- 		<ul class="pagination pagination-sm  justify-content-center">
+			<li class="page-item active" id="btn-confirmed" onclick="corona.changeDataLabel('confirmed cases')"><a class="page-link" href="#">confirmed</a></li>
+			<li class="page-item" id="btn-deaths" onclick="corona.changeDataLabel('deaths')"><a class="page-link" href="#">deaths</a></li>
+		</ul>
+ -->
+
+	</div>
+	<br>
+
+	<button id="btn-confirmed" disabled type="button" class="btn btn-light btn-sm" onclick="corona.changeDataLabel('confirmed cases')">confirmed<img src="images/icons/arrow-bar-right.svg" alt="" width="16" height="16" title="Bootstrap"></button>
+	<button id="btn-deaths" type="button" class="btn btn-light btn-sm" onclick="corona.changeDataLabel('deaths')">deaths<img src="images/icons/arrow-bar-right.svg" alt="" width="16" height="16" title="Bootstrap"></button>
+
+</div>
+
+<!-- time bar -->
+<div class="col-sm-12" align="center" style="position:absolute; top:20px;z-index:999;">
+	<div class="col-sm-8" style=" background-color:rgba(0,0,0,0.5);padding:10px;">
+		<!-- chart -->
+		<div class="ct-chart " style="display:none;"></div>
+		<!-- timebar -->
+		<input type="text" id="timebar" style=""></input>
+	</div>
+</div>
+
+<!-- map type -->
+<div class="dropdown" style="position:absolute; top:20px;right:80px;z-index:999">
+	<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+		Map Type
+	</button>
+	<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+		<a class="dropdown-item" href="#" id="basemap-light">light</a>
+		<a class="dropdown-item" href="#" id="basemap-dark">dark</a>
+		<a class="dropdown-item" href="#" id="basemap-satellite">satellite</a>
+	</div>
+</div>
+
+	<!-- <script type="text/javascript" charset="utf8" src="data/data.json"></script> -->
+	<script type="text/javascript" charset="utf8" src="js/map.js"></script>
+
+
+</body>
+</html>
