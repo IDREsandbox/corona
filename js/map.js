@@ -3,7 +3,7 @@
 	Config File for corona Maproom v1.0
 
 	Author: yohman
-	Last updated: August 12, 2018
+	Last updated: March 13, 2020
 
 ***/
 
@@ -294,7 +294,7 @@ function getProportionalCircleSize(num)
 	}
 	else if (corona.scale == 'log')
 	{
-		circlesize = Math.log2(num)*3
+		circlesize = Math.log2(num)*2
 		if(circlesize < minsize)
 		{
 			circlesize = minsize
