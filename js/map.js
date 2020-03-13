@@ -15,7 +15,7 @@
 
 	var corona = {};
 	corona.data = {};
-	corona.scale = 'proportional' // log
+	corona.scale = 'log' // log | proportional
 	corona.data_label = 'confirmed cases'
 
 /***
@@ -165,7 +165,8 @@ corona.init = function()
 
 	// add circles around F1 (10km, 20km, 30km)
 	var circleStyle = {
-		"color": "red",
+		"color": "white",
+		"fillColor": "red",
 		"weight": 1,
 		"opacity": 0.8,
 		"fillOpacity": 0.5
@@ -269,25 +270,34 @@ function getTotalByDate(date)
 function getProportionalCircleSize(num)
 {
 
-	const maxsize = 100
-	const minsize = 50
-	// anything above this will be the same size
-	const max = corona.data.covid_time_series.max*.75
+	// if(num<minsize){
+	// 	num = minsize
+	// }
+		const maxsize = 100
+		const minsize = 3
 
-
-	if(num>max){
-		num = max
-	}
-	if(num<minsize){
-		num = minsize
-	}
 	if(corona.scale == 'proportional')
 	{
+		// anything above this will be the same size
+		const max = corona.data.covid_time_series.max*.75
+
+
+		if(num>max){
+			num = max
+		}
 		circlesize = num*maxsize/max
+		if(circlesize < minsize)
+		{
+			circlesize = minsize
+		}
 	}
 	else if (corona.scale == 'log')
 	{
-		circlesize = Math.log2(num)*2
+		circlesize = Math.log2(num)*3
+		if(circlesize < minsize)
+		{
+			circlesize = minsize
+		}
 	}
 	// const maxsize = 100
 	// const max = 10000
@@ -329,10 +339,11 @@ corona.mapCoronaData = function(date)
 		{
 			var circleStyle = {
 				"radius": getProportionalCircleSize(val[4]),
-				"color": "red",
+				"color": "white",
+				"fillColor": "red",
 				"weight": 1,
 				"opacity": 0.8,
-				"fillOpacity": 0.5
+				"fillOpacity": 0.2
 			};
 
 			corona.circles[i] = L.circleMarker([val[2], val[3]], circleStyle).addTo(corona.map);			
