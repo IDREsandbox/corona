@@ -62,7 +62,7 @@ corona.getData = function()
 			corona.data.covid_time_series.headers = headers
 			
 			//hack for now
-			corona.data.covid_time_series.headers.pop()
+			// corona.data.covid_time_series.headers.pop()
 
 			// update last updated
 			$('#last-updated').html('Last updated: '+corona.data.covid_time_series.headers[corona.data.covid_time_series.headers.length-1])
