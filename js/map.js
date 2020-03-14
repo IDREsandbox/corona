@@ -58,7 +58,12 @@ corona.getData = function()
 			for (var i = corona.data.covid_time_series.data[0].length - 1; i > 3; i--) {
 				headers.unshift(corona.data.covid_time_series.data[0][i])
 			}
+
 			corona.data.covid_time_series.headers = headers
+			
+			//hack for now
+			corona.data.covid_time_series.headers.pop()
+
 			// update last updated
 			$('#last-updated').html('Last updated: '+corona.data.covid_time_series.headers[corona.data.covid_time_series.headers.length-1])
 			// cycle through results
@@ -262,7 +267,11 @@ function getTotalByDate(date)
 	var maxdata = 0
 	// find max num in all of the data
 	$.each(corona.data.covid_time_series[date],function(i,val){
+		// console.log(val[4])
+		if (typeof val[4] !== 'undefined')
+		{
 			maxdata =  maxdata + parseInt(val[4])
+		}
 	})
 
 	return maxdata
