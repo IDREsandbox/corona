@@ -16,9 +16,10 @@
 	var corona = {};
 	corona.data = {};
 	corona.scale = 'log' // log | proportional
-	corona.data_label = 'confirmed cases'
+	corona.data_label = 'confirmed' // deaths | recovered
 	corona.circles = [] //placeholder for the circles
 	corona.currentDate = ''
+	corona.infopanel = false
 
 /***
 
@@ -29,83 +30,135 @@
 $(document).ready(function() {
 	corona.getData();
 });
+	var allResults = [];
 
 corona.getData = function()
 {
-	if(corona.data_label == 'confirmed cases')
+	var urls = ["https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv", "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Deaths.csv","https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv"];
+
+	for (var i = 0; i < urls.length; i++)
 	{
-		url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv'
-	}
-	else if (corona.data_label == 'deaths')
-	{
-		url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Deaths.csv'
-	}
+		Papa.parse(urls[i], {
+			download: true,
+			error: function(err, file, inputElem, reason) { alert('Data is not loading properly. Please try again later. (debug:'+reason+')') },
+			complete: function(results,url) {
+				console.log('papa parsing '+url)
+				allResults.push(results);
 
-	Papa.parse(url, {
-		download: true,
-		complete: function(results) {
-
-			// add data to object
-			corona.data.covid_time_series = results
-			corona.data.covid_time_series.max = getMaxData()
-
-			// get the headers
-			const headers = []
-			for (var i = corona.data.covid_time_series.data[0].length - 1; i > 3; i--) {
-				headers.unshift(corona.data.covid_time_series.data[0][i])
-			}
-
-			corona.data.covid_time_series.headers = headers
-			
-			//hack for now
-			// check data is not empty
-			if(findEmptyData)
-			{
-				corona.data.covid_time_series.headers.pop()
-			}
-
-			// update last updated
-			$('#last-updated').html('Last updated: '+corona.data.covid_time_series.headers[corona.data.covid_time_series.headers.length-1])
-			// cycle through results
-			for (var i = results.data[0].length - 1; i >= 0; i--) {
-				
-				// data is in the 4th column and beyond
-				if(i>3)
+				// add data to object
+				if(url == urls[0])
 				{
-					thisdate = results.data[0][i]
-					// create an object array for each date
-					corona.data.covid_time_series[thisdate] = []
+					corona.data.confirmed = results
+				}
+				else if (url == urls[1])
+				{
+					corona.data.deaths = results
+				}
+				else if (url == urls[2])
+				{
+					corona.data.recovered = results
+				}
 
-					$.each(results.data,function(j,val){
-						thisarray = []
-						
-						// add the first couple of columns for place name and lat/lng
-						if(j>0)
-						{
-							for (var k = 3; k >= 0; k--) {
-								thisarray.unshift(val[k])
-							}
-							thisarray.push(val[i])
-							// add the 
-							corona.data.covid_time_series[thisdate].push(thisarray)
-						}
+				// when all three datasets are loaded, then...
+				if (allResults.length == urls.length)
+				{
 
-					})
+					console.log(corona.data)
+
+					// add data to object
+					corona.data.confirmed.max = getMaxData()
+					corona.data.deaths.max = getMaxData()
+					corona.data.recovered.max = getMaxData()
+
+					// transpose data
+					corona.transposeDataByDate(corona.data.confirmed)
+					corona.transposeDataByDate(corona.data.deaths)
+					corona.transposeDataByDate(corona.data.recovered)
+
+					// get the headers
+					const headers = []
+					for (var i = corona.data.confirmed.data[0].length - 1; i > 3; i--) {
+						headers.unshift(corona.data.confirmed.data[0][i])
+					}
+
+					corona.data.headers = headers
+					
+					// check data is not empty
+					if(findEmptyData())
+					{
+						corona.data.headers.pop()
+					}
+
+					// update last updated
+					$('#last-updated').html('Last updated: '+corona.data.headers[corona.data.headers.length-1])
+
+					if (typeof corona.map == 'undefined')
+					{
+						corona.setParameters()
+					}
+					else
+					{
+						corona.init()
+					}
+
+
+
+					// Do whatever you need to do
 				}
 			}
-			if (typeof corona.map == 'undefined')
-			{
-				corona.setParameters()
-			}
-			else
-			{
-				corona.init()
-			}
-		}
-	});
+		});
+	}
+
+	// if(corona.data_label == 'confirmed cases')
+	// {
+	// 	url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv'
+	// }
+	// else if (corona.data_label == 'deaths')
+	// {
+	// 	url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Deaths.csv'
+	// }
+
+	// Papa.parse(url, {
+	// 	download: true,
+	// 	complete: function(results) {
+
+
+	// 	}
+	// });
 
 }
 
+corona.transposeDataByDate = function(data)
+{
+	console.log('transposing...')
+	console.log(data)
+	for (var i = data.data[0].length - 1; i >= 0; i--) {
+		
+		// data is in the 4th column and beyond
+		if(i>3)
+		{
+			thisdate = data.data[0][i]
+			// create an object array for each date
+			data[thisdate] = []
+
+			$.each(data.data,function(j,val){
+				thisarray = []
+				
+				// add the first couple of columns for place name and lat/lng
+				if(j>0)
+				{
+					for (var k = 3; k >= 0; k--) {
+						thisarray.unshift(val[k])
+					}
+					thisarray.push(val[i])
+					// add the 
+					data[thisdate].push(thisarray)
+				}
+
+			})
+		}
+	}
+}
 
 /***
 
@@ -122,7 +175,7 @@ corona.setParameters = function()
 
 	//add zoom control with your options
 	L.control.zoom({
-	     position:'topright'
+		 position:'topright'
 	}).addTo(corona.map);
 
 	// info control
@@ -147,7 +200,12 @@ corona.setParameters = function()
 
 	// the basemap default
 	corona.basemap = corona.basemaps[1] //0: light 1: dark 2: satellite
+	corona.map.setView([20,30], 2);
+	corona.map.addLayer(corona.basemap); 
+	// corona.displayLegend();
 
+	// add the timebar
+	corona.setTimebar();
 	corona.init()
 }
 
@@ -160,12 +218,6 @@ corona.init = function()
 {
 	console.log('initializing...')
 
-	corona.map.setView([20,30], 2);
-	corona.map.addLayer(corona.basemap); 
-	// corona.displayLegend();
-
-	// add the timebar
-	corona.setTimebar();
 	timebar.update({from:0})
 
 	// start the animation by default
@@ -182,6 +234,22 @@ corona.init = function()
 		corona.changeBaseMap(2)
 	})
 
+	$(document).keydown(
+		function(e)
+		{    
+
+			if (e.keyCode == 39) {      
+				console.log('right')
+
+			}
+			if (e.keyCode == 37) {      
+				console.log('left')
+
+			}
+		}
+	);
+
+
 }
 
 /***
@@ -196,20 +264,22 @@ corona.animate = function()
 	// disable buttons while animating
 	$('#btn-confirmed').prop('disabled',true)
 	$('#btn-deaths').prop('disabled',true)
+	$('#btn-recovered').prop('disabled',true)
 
 	time = 200
 	// loop through each date, wait, and then go to the next one
-	$.each(corona.data.covid_time_series.headers,function(i,val){
+	$.each(corona.data.headers,function(i,val){
 		var t = setTimeout(function(){
 			timebar.update({from:i})
 		},time*i)
 
 		// when you've reached the last date, enable the buttons
-		if(corona.data.covid_time_series.headers.length-1 == i)
+		if(corona.data.headers.length-1 == i)
 		{
 			var t = setTimeout(function(){
 				$('#btn-confirmed').prop('disabled',false)
 				$('#btn-deaths').prop('disabled',false)
+				$('#btn-recovered').prop('disabled',false)
 			},time*i)
 		}
 	})
@@ -220,15 +290,15 @@ corona.animate = function()
 corona.changeDataLabel = function(label)
 {
 	corona.data_label = label
-	corona.getData()
+	corona.init()
 }
 
 // find the max for any day in the data
-function getMaxData()
+function getMaxData(data)
 {
 	var maxdata = 0
 	// find max num in all of the data
-	$.each(corona.data.covid_time_series.data,function(i,val){
+	$.each(data,function(i,val){
 		for (var i = val.length - 1; i >= 0; i--) {
 			// first 4 columns are not data values
 			if(i>3)
@@ -247,7 +317,7 @@ function findEmptyData()
 {
 	var emptydata = false
 	// find max num in all of the data
-	$.each(corona.data.covid_time_series.data,function(i,val){
+	$.each(corona.data.confirmed.data,function(i,val){
 		for (var i = val.length - 1; i >= 0; i--) {
 			// first 4 columns are not data values
 			if(i>3)
@@ -268,7 +338,7 @@ function getTotalByDate(date)
 {
 	var maxdata = 0
 	// find max num in all of the data
-	$.each(corona.data.covid_time_series[date],function(i,val){
+	$.each(corona.data[corona.data_label][date],function(i,val){
 		// console.log(val[4])
 		if (typeof val[4] !== 'undefined')
 		{
@@ -289,7 +359,7 @@ function getProportionalCircleSize(num)
 	if(corona.scale == 'proportional')
 	{
 		// anything above this will be the same size
-		const max = corona.data.covid_time_series.max*.75
+		const max = corona.data[corona.data_label].max*.75
 
 
 		if(num>max){
@@ -329,12 +399,12 @@ function getProportionalCircleSize(num)
 corona.getPreviousDataValue = function(pos)
 {
 	// find where in the array the current date is
-	const cur = corona.data.covid_time_series.headers.indexOf(corona.currentDate)
+	const cur = corona.data.headers.indexOf(corona.currentDate)
 	if (cur > 0)
 	{
 		const prev = cur -1
-		const prev_date = corona.data.covid_time_series.headers[prev]
-		return corona.data.covid_time_series[prev_date][pos]
+		const prev_date = corona.data.headers[prev]
+		return corona.data[corona.data_label][prev_date][pos]
 	}
 	else
 	{
@@ -344,7 +414,7 @@ corona.getPreviousDataValue = function(pos)
 
 corona.getSparklineData = function(pos)
 {
-	const placedata = corona.data.covid_time_series.data[pos+1]
+	const placedata = corona.data[corona.data_label].data[pos+1]
 	const sparkdata = []
 	$.each(placedata,function(i,val){
 		if(i>3)
@@ -369,7 +439,7 @@ corona.mapCoronaData = function(date)
 		}
 	}
 	// add circles
-	$.each(corona.data.covid_time_series[date],function(i,val){
+	$.each(corona.data[corona.data_label][date],function(i,val){
 		// only map if it is a country
 		if(val[4]>0)
 		{
@@ -452,7 +522,7 @@ corona.setTimebar = function()
 		from: 	0,
 		grid: 	true,
 		step:	1,
-		values:	corona.data.covid_time_series.headers,
+		values:	corona.data.headers,
 		onChange: function (data) {
 			corona.mapCoronaData(data.from_value)
 		},
@@ -493,4 +563,19 @@ corona.displayLegend = function()
 	})
 	$('#data-legend > tbody:last-child').append(html);
 
+}
+
+corona.toggleInfopanel = function()
+{
+	console.log('toggling...')
+	if(corona.infopanel)
+	{
+		$('#info-panel').hide()
+		corona.infopanel = false
+	}
+	else
+	{
+		$('#info-panel').show()
+		corona.infopanel = true
+	}
 }

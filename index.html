@@ -30,10 +30,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/css/ion.rangeSlider.min.css"/>
     
     <!--jQuery-->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="js/jquery.min.js"></script>
     
     <!--Plugin JavaScript file-->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/js/ion.rangeSlider.min.js"></script>
+    <script src="js/ion.rangeSlider.min.js"></script>
  	<!-- jQuery -->
 	<!-- <script src="js/jquery-1.10.2.js"></script> -->
 	<script src="js/moment.js"></script>
@@ -52,16 +52,16 @@
 	<!-- bootstrap -->
 
 
-	<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js" integrity="sha384-xrRywqdh3PHs8keKZN+8zzc5TX0GRTLCcmivcbNJWm2rs5C8PRhcEn3czEjhAO9o" crossorigin="anonymous"></script>
+	<link href="css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+	<script src="js/popper.min.js" crossorigin="anonymous"></script>
+	<script src="js/bootstrap.min.js" crossorigin="anonymous"></script>
+	<script src="js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 
 
-	<!-- charts -->
+	<!-- charts
 	<link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
     <script src="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
-
+ -->
 	<link rel="stylesheet" href="styles/style.css">
 
 </head>
@@ -78,19 +78,18 @@
 	</div>
 </div>
 
-<!-- todokedori logo -->
+<!-- ucla logo -->
 
 <div class="col-sm-2" id="data-panel" style="position: absolute;top:20px;left: 10px;background-color: rgba(255,255,255,0.8);z-index:999;">
-
-	<h2>UCLA Sandbox COVID-19 Maproom</h2>
+	<div><a href="http://ucla.edu" target="_blank"><img src="images/ucla.png" width="80"></a></div>
+	<!-- <h2>UCLA </h2> -->
 	<p id="info-panel">
-
+		<a href="https://idre.ucla.edu/" target="_blank">UCLA IDRE</a> COVID-19 Maproom<br><br>
 		Data Source:
 		<br>
-		<a href="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data" target="_blank">2019 Novel Coronavirus COVID-19 (2019-nCoV) Data Repository by Johns Hopkins CSSE</a>
+		<a href="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data" target="_blank">COVID-19 Data Repository by Johns Hopkins CSSE</a>
 		<p style="background-color: white;padding:5px;" id="last-updated"></p>
-
-	</div>
+	</p>
 </div> 
 
 <!-- data display -->
@@ -112,18 +111,21 @@
 	</div>
 	<div style="padding:5px;">
 
-		<button id="btn-confirmed" disabled type="button" class="btn btn-light btn-sm" onclick="corona.changeDataLabel('confirmed cases')">confirmed<img src="images/icons/arrow-bar-right.svg" alt="" width="16" height="16" title="Bootstrap"></button>
+		<button id="btn-confirmed" disabled type="button" class="btn btn-light btn-sm" onclick="corona.changeDataLabel('confirmed')">confirmed<img src="images/icons/arrow-bar-right.svg" alt="" width="16" height="16" title="Bootstrap"></button>
 		<button id="btn-deaths" type="button" class="btn btn-light btn-sm" onclick="corona.changeDataLabel('deaths')">deaths<img src="images/icons/arrow-bar-right.svg" alt="" width="16" height="16" title="Bootstrap"></button>
+		<button id="btn-recovered" type="button" class="btn btn-light btn-sm" onclick="corona.changeDataLabel('recovered')">recovered<img src="images/icons/arrow-bar-right.svg" alt="" width="16" height="16" title="Bootstrap"></button>
 	</div>
 </div>
 
 <!-- time bar -->
-<div class="col-sm-12" align="center" style="position:absolute; top:20px;z-index:999;">
-	<div class="col-sm-8" style=" background-color:rgba(0,0,0,0.5);padding:10px;">
-		<!-- chart -->
-		<div class="ct-chart " style="display:none;"></div>
-		<!-- timebar -->
-		<input type="text" id="timebar" style=""></input>
+<div class="row justify-content-md-center">
+	<div class="col-sm-8" align="center" style="position:absolute; top:20px;z-index:999;">
+		<div class="col-md-auto" style=" background-color:rgba(0,0,0,0.5);padding:10px;">
+			<!-- chart -->
+			<div class="ct-chart " style="display:none;"></div>
+			<!-- timebar -->
+			<input type="text" id="timebar" style=""></input>
+		</div>
 	</div>
 </div>
 
