@@ -58,7 +58,11 @@ corona.getData = function()
 			corona.data.covid_time_series.headers = headers
 			
 			//hack for now
-			// corona.data.covid_time_series.headers.pop()
+			// check data is not empty
+			if(findEmptyData)
+			{
+				corona.data.covid_time_series.headers.pop()
+			}
 
 			// update last updated
 			$('#last-updated').html('Last updated: '+corona.data.covid_time_series.headers[corona.data.covid_time_series.headers.length-1])
@@ -239,6 +243,25 @@ function getMaxData()
 
 	return maxdata
 }
+function findEmptyData()
+{
+	var emptydata = false
+	// find max num in all of the data
+	$.each(corona.data.covid_time_series.data,function(i,val){
+		for (var i = val.length - 1; i >= 0; i--) {
+			// first 4 columns are not data values
+			if(i>3)
+			{
+				if(val[i] == "")
+				{
+					emptydata = true
+				}
+			}
+		}
+	})
+
+	return emptydata
+}
 
 // find the total for any given day
 function getTotalByDate(date)
@@ -358,15 +381,18 @@ corona.mapCoronaData = function(date)
 
 			if(percent_increase>50)
 			{
-				fillColor = '#de2d26'
+				fillColor = '#de2d26',
+				fillOpacity = 0.6
 			}
 			else if (percent_increase>20)
 			{
-				fillColor = '#fc9272'
+				fillColor = '#fc9272',
+				fillOpacity = 0.4
 			}
 			else
 			{
-				fillColor = '#fee0d2'				
+				fillColor = '#fee0d2',
+				fillOpacity = 0.2		
 			}
 
 			var circleStyle = {
@@ -374,8 +400,8 @@ corona.mapCoronaData = function(date)
 				"color": "white",
 				"fillColor": fillColor,
 				"weight": 1,
-				"opacity": 0.5,
-				"fillOpacity": 0.2
+				"opacity": fillOpacity,
+				"fillOpacity": fillOpacity
 			};
 
 			corona.circles[i] = L.circleMarker([val[2], val[3]], circleStyle).addTo(corona.map);			
