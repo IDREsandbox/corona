@@ -28,6 +28,15 @@
 ***/
 
 $(document).ready(function() {
+	// hide stuff if mobile
+	if ($(window).width() < 500)
+	{
+		$('#rankingtable').hide()
+		$('#info-panel').hide()
+		$('#maptype').hide()
+	}
+	$('#rankingtable-container').height($(window).height()/2)
+
 	corona.getData();
 });
 	var allResults = [];
@@ -42,7 +51,6 @@ corona.getData = function()
 			download: true,
 			error: function(err, file, inputElem, reason) { alert('Data is not loading properly. Please try again later. (debug:'+reason+')') },
 			complete: function(results,url) {
-				console.log('papa parsing '+url)
 				allResults.push(results);
 
 				// add data to object
@@ -62,8 +70,6 @@ corona.getData = function()
 				// when all three datasets are loaded, then...
 				if (allResults.length == urls.length)
 				{
-
-					console.log(corona.data)
 
 					// add data to object
 					corona.data.confirmed.max = getMaxData()
@@ -130,8 +136,6 @@ corona.getData = function()
 
 corona.transposeDataByDate = function(data)
 {
-	console.log('transposing...')
-	console.log(data)
 	for (var i = data.data[0].length - 1; i >= 0; i--) {
 		
 		// data is in the 4th column and beyond
@@ -171,6 +175,7 @@ corona.setParameters = function()
 	// instantiate the map
 	corona.map = L.map('map',{
 		zoomControl: false,
+		keyboard: false
 	});
 
 	//add zoom control with your options
@@ -239,11 +244,11 @@ corona.init = function()
 		{    
 
 			if (e.keyCode == 39) {      
-				console.log('right')
+				timebar.update({from:timebar.result.from+1})
 
 			}
 			if (e.keyCode == 37) {      
-				console.log('left')
+				timebar.update({from:timebar.result.from-1})
 
 			}
 		}
@@ -339,7 +344,6 @@ function getTotalByDate(date)
 	var maxdata = 0
 	// find max num in all of the data
 	$.each(corona.data[corona.data_label][date],function(i,val){
-		// console.log(val[4])
 		if (typeof val[4] !== 'undefined')
 		{
 			maxdata =  maxdata + parseInt(val[4])
@@ -347,6 +351,37 @@ function getTotalByDate(date)
 	})
 
 	return maxdata
+}
+
+// get rankings for any given day
+function getRankingsByDate(date)
+{
+	// empty table
+	$("#rankingtable").find("tr:gt(0)").remove();
+
+	// rank based on values
+	var ranked = corona.data[corona.data_label][date]
+	var sortedArray = ranked.sort(function(a, b) { return b[4] - a[4]; });
+
+	$.each(sortedArray,function(i,val){
+		if(i < 10000)
+		{		
+			$('#rankingtable tbody').append('<tr onmouseover="corona.rankingMouseover('+i+')" onmouseout="corona.rankingMouseout('+i+')"><td>'+val[0]+' '+val[1]+'</td><td align="right">'+val[4]+'</tr>');
+		}
+	})
+}
+
+var prev_opacity
+corona.rankingMouseover = function(i)
+{
+	prev_opacity = corona.circles[i].options.opacity
+	corona.circles[i].setStyle({weight:2,opacity:1})
+	corona.circles[i].openPopup()
+}
+corona.rankingMouseout = function(i)
+{
+	// prev_opacity = corona.circles[i].options.opacity
+	corona.circles[i].setStyle({weight:1,opacity:prev_opacity})
 }
 
 // this determines the size of the circles
@@ -431,6 +466,9 @@ corona.mapCoronaData = function(date)
 	$('#datedisplay').html('<h1>'+getTotalByDate(date)+'</h1>'+corona.data_label+' on '+date)
 	// get max of currrent date
 	getTotalByDate(date)
+	getRankingsByDate(date)
+
+
 	// remove circles
 	for (var i = corona.circles.length - 1; i >= 0; i--) {
 		if(corona.circles[i] !== undefined)
@@ -471,7 +509,8 @@ corona.mapCoronaData = function(date)
 				"fillColor": fillColor,
 				"weight": 1,
 				"opacity": fillOpacity,
-				"fillOpacity": fillOpacity
+				"fillOpacity": fillOpacity,
+				"data": val
 			};
 
 			corona.circles[i] = L.circleMarker([val[2], val[3]], circleStyle).addTo(corona.map);			
@@ -482,20 +521,7 @@ corona.mapCoronaData = function(date)
 
 			corona.circles[i].on('mouseover',function(e){
 
-				console.log(e)
-				// content = $('#spark').sparkline(corona.getSparklineData(i), {
-				// 	type: 'bar'
-				// });
-
-
-				// var popup = e.target.getPopup();
-				// // var chart_div = document.getElementById("graphdiv");
-				// popup.setContent( content );
 				this.openPopup()
-
-
-				// $.sparkline_display_visible();
-
 
 			})
 			corona.circles[i].on('mouseout',function(e){

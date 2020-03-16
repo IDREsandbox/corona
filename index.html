@@ -27,14 +27,14 @@
 
 
 <!--Plugin CSS file with desired skin-->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/css/ion.rangeSlider.min.css"/>
-    
-    <!--jQuery-->
-    <script src="js/jquery.min.js"></script>
-    
-    <!--Plugin JavaScript file-->
-    <script src="js/ion.rangeSlider.min.js"></script>
- 	<!-- jQuery -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/css/ion.rangeSlider.min.css"/>
+	
+	<!--jQuery-->
+	<script src="js/jquery.min.js"></script>
+	
+	<!--Plugin JavaScript file-->
+	<script src="js/ion.rangeSlider.min.js"></script>
+	<!-- jQuery -->
 	<!-- <script src="js/jquery-1.10.2.js"></script> -->
 	<script src="js/moment.js"></script>
 	<script src="js/papaparse.min.js"></script>
@@ -60,12 +60,13 @@
 
 	<!-- charts
 	<link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
-    <script src="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
+	<script src="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
  -->
 	<link rel="stylesheet" href="styles/style.css">
 
 </head>
 <body>
+
 
 <div class="container-fluid h-100">
 	<!-- <div class="row h-100" style="padding-top:56px"> -->
@@ -78,18 +79,29 @@
 	</div>
 </div>
 
+
+
+
+
 <!-- ucla logo -->
 
-<div class="col-sm-2" id="data-panel" style="position: absolute;top:20px;left: 10px;background-color: rgba(255,255,255,0.8);z-index:999;">
+<div id="logo" class="col-sm-2" id="data-panel" style="position: absolute;top:20px;left: 10px;background-color: rgba(255,255,255,0.8);z-index:999;">
 	<div><a href="http://ucla.edu" target="_blank"><img src="images/ucla.png" width="80"></a></div>
 	<!-- <h2>UCLA </h2> -->
-	<p id="info-panel">
-		<a href="https://idre.ucla.edu/" target="_blank">UCLA IDRE</a> COVID-19 Maproom<br><br>
+	<div id="info-panel">
+		<a href="https://idre.ucla.edu/" target="_blank">UCLA IDRE</a> COVID-19 Maproom<br>
 		Data Source:
 		<br>
 		<a href="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data" target="_blank">COVID-19 Data Repository by Johns Hopkins CSSE</a>
-		<p style="background-color: white;padding:5px;" id="last-updated"></p>
-	</p>
+		<p style="background-color: white;padding:5px;">
+			<span id="last-updated"></span><br>
+			<ul>
+				<li>use arrow keys to navigate time</li>
+				<li><span style="color:red">red</span> circles: high increase</li>
+				<li><span style="color:gray">white</span> circles: low increase</li>
+			</ul>
+		</p>
+	</div>
 </div> 
 
 <!-- data display -->
@@ -130,7 +142,7 @@
 </div>
 
 <!-- map type -->
-<div class="dropdown" style="position:absolute; top:20px;right:80px;z-index:999">
+<div id="maptype" class="dropdown" style="position:absolute; top:20px;right:80px;z-index:999">
 	<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 		Map Type
 	</button>
@@ -141,6 +153,48 @@
 	</div>
 </div>
 
+<!-- ranking display -->
+<div id="rankingtable-container" class="col-sm-2" align="center" style="overflow:auto;opacity: 0.8; position:absolute;right:10px; bottom:20px;z-index:999;">
+	<!-- <div id="ranking" align="center"  style=" background-color:rgba(255,255,255,0.7);padding:5px;"> -->
+		<table id="rankingtable" class="table table-dark table-sm">
+			<tbody>
+				<tr>
+					<td></td>
+					<td></td>
+				</tr>
+			</tbody>
+		</table>
+	<!-- </div> -->
+</div>
+
+<!-- Modal
+<div class="modal fade" id="coronamodal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+	<div class="modal-content">
+	  <div class="modal-header">
+		<h5 class="modal-title" id="exampleModalLongTitle">Welcome</h5>
+		<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+		  <span aria-hidden="true">&times;</span>
+		</button>
+	  </div>
+	  <div class="modal-body">
+	   The UCLA Research Life Cycle Map aims to provide a roadmap that meets the needs of UCLA researchers by embedding institutional research support services into the research process. 
+	   <br>
+	   <br>
+	   <ol>
+			<li>Zoom in using your mouse wheel</li>
+			<li>Hover or click on a node to find out who supports the research activity</li>
+		</ol>
+	   
+	   <img src="./static/images/zoom and click.gif" width="460">
+	  </div>
+	  <div class="modal-footer">
+		<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+	  </div>
+	</div>
+  </div>
+</div>
+ -->
 	<!-- <script type="text/javascript" charset="utf8" src="data/data.json"></script> -->
 	<script type="text/javascript" charset="utf8" src="js/map.js"></script>
 
