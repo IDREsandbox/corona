@@ -50,7 +50,7 @@ $(document).ready(function() {
 
 	const geo = urlParams.get('geo')
 	console.log(geo);
-	if(typeof geo !== 'undefined')
+	if(geo !== null)
 	{
 		corona.geo_scale = geo
 	}
