@@ -14,18 +14,29 @@
 ***/
 
 	var corona = {};
-	corona.data = {};
+	corona.data = {
+		confirmed: {},
+		deaths: {},
+		recovered: {}
+	};
 	corona.scale = 'log' // log | proportional
 	corona.data_label = 'confirmed' // deaths | recovered
 	corona.circles = [] //placeholder for the circles
 	corona.currentDate = ''
 	corona.infopanel = false
+	corona.geo_scale = 'la' // global | la
+	corona.urls = {
+		global: ["https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv", "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Deaths.csv","https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv"],
+		la: ["./data/COVID19LA_confirmed.csv"]
+	}
 
 /***
 
 	Get the data
 
 ***/
+const queryString = window.location.search;
+const urlParams = new URLSearchParams(queryString);
 
 $(document).ready(function() {
 	// hide stuff if mobile
@@ -37,13 +48,32 @@ $(document).ready(function() {
 	}
 	$('#rankingtable-container').height($(window).height()/2)
 
+	const geo = urlParams.get('geo')
+	console.log(geo);
+	if(typeof geo !== 'undefined')
+	{
+		corona.geo_scale = geo
+	}
+
+	if(corona.geo_scale == 'global')
+	{
+		$('#datasource').html('<a href="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data" target="_blank">COVID-19 Data Repository by Johns Hopkins CSSE</a>')
+	}
+	else if (corona.geo_scale == 'la')
+	{
+		$('#datasource').html('<a href="https://www.latimes.com/projects/california-coronavirus-cases-tracking-outbreak/" target="_blank">LA Times</a>')
+	}
+
 	corona.getData();
 });
-	var allResults = [];
+	
+var allResults = [];
 
 corona.getData = function()
 {
-	var urls = ["https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv", "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Deaths.csv","https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv"];
+	
+	var urls = corona.urls[corona.geo_scale]
+	// var urls = ["https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv", "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Deaths.csv","https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv"];
 
 	for (var i = 0; i < urls.length; i++)
 	{
@@ -77,9 +107,18 @@ corona.getData = function()
 					corona.data.recovered.max = getMaxData()
 
 					// transpose data
-					corona.transposeDataByDate(corona.data.confirmed)
-					corona.transposeDataByDate(corona.data.deaths)
-					corona.transposeDataByDate(corona.data.recovered)
+					if(typeof corona.data.confirmed.data !== 'undefined')
+					{
+						corona.transposeDataByDate(corona.data.confirmed)
+					}
+					if(typeof corona.data.deaths.data !== 'undefined')
+					{
+						corona.transposeDataByDate(corona.data.deaths)
+					}
+					if(typeof corona.data.recovered.data !== 'undefined')
+					{
+						corona.transposeDataByDate(corona.data.recovered)
+					}
 
 					// get the headers
 					const headers = []
@@ -136,6 +175,8 @@ corona.getData = function()
 
 corona.transposeDataByDate = function(data)
 {
+	console.log('transposing...')
+	console.log(data)
 	for (var i = data.data[0].length - 1; i >= 0; i--) {
 		
 		// data is in the 4th column and beyond
@@ -283,8 +324,15 @@ corona.animate = function()
 		{
 			var t = setTimeout(function(){
 				$('#btn-confirmed').prop('disabled',false)
-				$('#btn-deaths').prop('disabled',false)
-				$('#btn-recovered').prop('disabled',false)
+				// only enable if data exists
+				if(typeof corona.data['deaths'].data !== 'undefined')
+				{
+					$('#btn-deaths').prop('disabled',false)
+				}
+				if(typeof corona.data['recovered'].data !== 'undefined')
+				{
+					$('#btn-recovered').prop('disabled',false)
+				}
 			},time*i)
 		}
 	})
@@ -301,6 +349,7 @@ corona.changeDataLabel = function(label)
 // find the max for any day in the data
 function getMaxData(data)
 {
+	console.log(data)
 	var maxdata = 0
 	// find max num in all of the data
 	$.each(data,function(i,val){
@@ -362,12 +411,37 @@ function getRankingsByDate(date)
 	// rank based on values
 	var ranked = corona.data[corona.data_label][date]
 	var sortedArray = ranked.sort(function(a, b) { return b[4] - a[4]; });
-
+	// console.log(sortedArray)
 	$.each(sortedArray,function(i,val){
-		if(i < 10000)
-		{		
-			$('#rankingtable tbody').append('<tr onmouseover="corona.rankingMouseover('+i+')" onmouseout="corona.rankingMouseout('+i+')"><td>'+val[0]+' '+val[1]+'</td><td align="right">'+val[4]+'</tr>');
+
+		var deaths = '<span style="opacity:0.5">n/a</span>'
+		var recovered = '<span style="opacity:0.5">n/a</span>'
+		// find death values
+		$.each(corona.data['deaths'][date],function(j,dval){
+			if(val[0] == dval[0] && val[1] == dval[1] && val[2] == dval[2])
+			{
+				deaths = dval[4]
+			}
+		})
+
+		// find death values
+		$.each(corona.data['recovered'][date],function(k,rval){
+			if(val[0] == rval[0] && val[1] == rval[1] && val[2] == rval[2])
+			{
+				recovered = rval[4]
+			}
+		})
+
+		if(val[0] == '')
+		{
+			var place = val[1]
 		}
+		else
+		{
+			var place = val[1] + ', ' + val[0]
+		}
+
+		$('#rankingtable tbody').append('<tr onmouseover="corona.rankingMouseover('+i+')" onmouseout="corona.rankingMouseout('+i+')"><td>'+place+'</td><td align="right">'+val[4]+'</td><td align="right">'+deaths+'</td><td align="right">'+recovered+'</tr>');
 	})
 }
 
@@ -414,7 +488,12 @@ function getProportionalCircleSize(num)
 	***/
 	else if (corona.scale == 'log')
 	{
-		circlesize = Math.log2(num)*2
+		var factor = 2
+		if(corona.geo_scale == 'la')
+		{
+			factor = 8
+		}
+		circlesize = Math.log2(num)*factor
 		if(circlesize < minsize)
 		{
 			circlesize = minsize
@@ -530,7 +609,8 @@ corona.mapCoronaData = function(date)
 		}
 		
 	})
-
+	var circlegroup = new L.featureGroup(corona.circles)
+	corona.map.fitBounds(circlegroup.getBounds())
 }
 
 /***
