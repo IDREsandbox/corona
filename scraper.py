@@ -5,8 +5,8 @@ import time
 
 # function to get the data
 def get_raw_data(url,today):
-    headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux i586; rv:31.0) Gecko/20100101 Firefox/74.0'}
-    response = requests.get(url,headers=headers)
+    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:61.0) Gecko/20100101 Firefox/74.0'}
+    response = requests.get(url,headers=headers,verify=False)
     js = lxml.etree.HTML(response.content).find('.//body/script').text
     json_objects = js.partition('=')[2].strip()
     filename = "./data/_raw_"+today+".txt"
