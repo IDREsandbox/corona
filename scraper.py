@@ -2,6 +2,7 @@ import requests
 import lxml.etree,json
 from datetime import datetime
 import time
+import os,sys
 
 # function to get the data
 def get_raw_data(url,today):
@@ -12,12 +13,13 @@ def get_raw_data(url,today):
     filename = "./data/_raw_"+today+".txt"
     target_file = open(filename,"w+")
     target_file.write(json_objects)
-    write_the_data_by_line(target_file,today)
+    target_file.close()
+    return filename
 
 # function to write the json
 def write_file(variable_name,day,data):
     target_file = variable_name+"_"+day+".json"
-    target = open("./data/"+target_file,"a")
+    target = open("./data/"+target_file,"w")
     target.write(data)
 
 # function for getting the url and time
@@ -25,26 +27,32 @@ def the_scraper(url):
     while True:
         today = datetime.today().strftime('%Y_%m_%d')
         print('now getting record for '+str(today) )
-        get_raw_data(url,today)
+        file_name = get_raw_data(url,today)
+        write_the_data_by_line(file_name,today)
         time.sleep(72000)
         
 
-def write_the_data_by_line(target_file,today):
+def write_the_data_by_line(file_name,today):
     count = 0
-    for count, line in enumerate(target_file):
+    the_file = (str(file_name))
+    f = open(the_file, "r")
+    for count, line in enumerate(f):
         if count == 0:
             variable_name = "CALIFORNIA_BY_DAY"
-            data = str(variable_name)+" = "+line      
+            data = str(variable_name)+" = "+line  
             write_file(variable_name,today,data)
         elif count == 1:
             variable_name = "COUNTY_DATA"
-            line.replace('window.COUNTY_DATA','COUNTY_DATA')
+            the_line = line.replace('window.COUNTY_DATA','COUNTY_DATA')
+            data = str(the_line)
             write_file(variable_name,today,data)
         elif count == 2:
             variable_name = "STATES"
-            line.replace('window.STATES','STATES')
+            the_line = line.replace('window.STATES','STATES')
+            data = str(the_line)
             write_file(variable_name,today,data)
-
+    print('finished scraping for '+ today)
+        
 # main application
 if __name__ == '__main__':
     url = 'https://www.latimes.com/projects/california-coronavirus-cases-tracking-outbreak/'
