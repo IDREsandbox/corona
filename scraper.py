@@ -10,7 +10,7 @@ def get_raw_data(url,today):
     response = requests.get(url,headers=headers)
     js = lxml.etree.HTML(response.content).find('.//body/script').text
     json_objects = js.partition('=')[2].strip()
-    filename = "./data/_raw_"+today+".txt"
+    filename = "./data/_raw_"+today+".json"
     target_file = open(filename,"w+")
     target_file.write(json_objects)
     target_file.close()
