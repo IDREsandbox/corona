@@ -52,6 +52,7 @@ def write_the_data_by_line(file_name,today):
             data = str(the_line)
             write_file(variable_name,today,data)
     print('finished scraping for '+ today)
+    print('now waiting 24 hours for next scrape')
         
 # main application
 if __name__ == '__main__':
