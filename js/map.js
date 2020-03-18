@@ -24,7 +24,7 @@
 	corona.circles = [] //placeholder for the circles
 	corona.currentDate = ''
 	corona.infopanel = false
-	corona.geo_scale = 'la' // global | la
+	corona.geo_scale = 'global' // global | la
 	corona.urls = {
 		global: ["https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv", "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Deaths.csv","https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv"],
 		la: ["./data/COVID19LA_confirmed.csv"]
@@ -46,15 +46,18 @@ $(document).ready(function() {
 		$('#info-panel').hide()
 		$('#maptype').hide()
 	}
+
+	// set the height of the rankings table to half the window height
 	$('#rankingtable-container').height($(window).height()/2)
 
+	// allow url paramter to set the geo scale (global vs LA)
 	const geo = urlParams.get('geo')
-	console.log(geo);
 	if(geo !== null)
 	{
 		corona.geo_scale = geo
 	}
 
+	// change the data source based on the data
 	if(corona.geo_scale == 'global')
 	{
 		$('#datasource').html('<a href="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data" target="_blank">COVID-19 Data Repository by Johns Hopkins CSSE</a>')
@@ -64,19 +67,53 @@ $(document).ready(function() {
 		$('#datasource').html('<a href="https://www.latimes.com/projects/california-coronavirus-cases-tracking-outbreak/" target="_blank">LA Times</a>')
 	}
 
+	// go get the data!
 	corona.getData();
 });
 	
 var allResults = [];
 
+
+corona.parseCAData = function()
+{
+	// papa parse is cool!
+	Papa.parse('./data/ca_counties.csv', {
+		download: true,
+		error: function(err, file, inputElem, reason) { alert('Data is not loading properly. Please try again later. (debug:'+reason+')') },
+		complete: function(results,url) {
+			allResults.push(results);
+			console.log(results)
+			// $.getJSON('http://0.0.0.0:8000/covid19/data/COUNTY_DATA_2020_03_17.json',function(data){
+			// 	console.log(data)
+			// })
+		}
+	})
+	Papa.parse('./data/COUNTY_DATA_2020_03_17.json', {
+		download: true,
+		error: function(err, file, inputElem, reason) { alert('Data is not loading properly. Please try again later. (debug:'+reason+')') },
+		complete: function(results,url) {
+			console.log(results)
+			// $.getJSON('http://0.0.0.0:8000/covid19/data/COUNTY_DATA_2020_03_17.json',function(data){
+			// 	console.log(data)
+			// })
+		}
+	})
+}
+/***
+
+	Get the Data from remote sources
+
+***/
 corona.getData = function()
 {
 	
+	// get the right data based on the geo requested
 	var urls = corona.urls[corona.geo_scale]
-	// var urls = ["https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv", "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Deaths.csv","https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv"];
 
+	// for each data url, parse the csv and convert to JSON
 	for (var i = 0; i < urls.length; i++)
 	{
+		// papa parse is cool!
 		Papa.parse(urls[i], {
 			download: true,
 			error: function(err, file, inputElem, reason) { alert('Data is not loading properly. Please try again later. (debug:'+reason+')') },
@@ -102,21 +139,21 @@ corona.getData = function()
 				{
 
 					// add data to object
-					corona.data.confirmed.max = getMaxData()
-					corona.data.deaths.max = getMaxData()
-					corona.data.recovered.max = getMaxData()
 
 					// transpose data
 					if(typeof corona.data.confirmed.data !== 'undefined')
 					{
+						corona.data.confirmed.max = getMaxData()
 						corona.transposeDataByDate(corona.data.confirmed)
 					}
 					if(typeof corona.data.deaths.data !== 'undefined')
 					{
+						corona.data.deaths.max = getMaxData()
 						corona.transposeDataByDate(corona.data.deaths)
 					}
 					if(typeof corona.data.recovered.data !== 'undefined')
 					{
+						corona.data.recovered.max = getMaxData()
 						corona.transposeDataByDate(corona.data.recovered)
 					}
 
@@ -491,7 +528,7 @@ function getProportionalCircleSize(num)
 		var factor = 2
 		if(corona.geo_scale == 'la')
 		{
-			factor = 8
+			factor = 4
 		}
 		circlesize = Math.log2(num)*factor
 		if(circlesize < minsize)
