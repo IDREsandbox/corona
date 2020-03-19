@@ -43,7 +43,14 @@ def data_exporter(line,variable,today,pattern=False):
                 data = match.group(1)
                 cleaned = data.replace(":","",1)
                 write_file(variable,today,cleaned)
-                print(msg)              
+                print(msg)
+            if variable == "STATES":
+                data = match.group(1)
+                cleaned = data.replace("window."+variable+" = ",'')
+                cleaned += ""
+                print(cleaned)
+                write_file(variable,today,cleaned)
+                print(msg)                     
             else:
                 data = match.group(1)
                 cleaned = data.replace("window."+variable+" = ",'')
@@ -58,7 +65,7 @@ def write_the_data_by_line(file_name,today):
     for count, line in enumerate(f):
         data_exporter(line,'COUNTY_DATA',today,pattern=r"window\.COUNTY_DATA =.+?(?=:{\")(.*)};")
         data_exporter(line,'LATIMES_CALIFORNIA_BY_DAY',today,pattern=r"window\.LATIMES_CALIFORNIA_BY_DAY =.+?(?=\[)(.*)]")
-        data_exporter(line,'STATES',today,pattern=r"window.STATES =.+?(?=\[)(.*)];")
+        data_exporter(line,'STATES',today,pattern=r"window.STATES =.+?(?=\[)(.*);")
 
     print('======================')
     print('Finished scraping for '+ today)
