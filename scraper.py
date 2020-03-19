@@ -27,7 +27,8 @@ def write_file(variable_name,day,data):
 def the_scraper(url):
     while True:
         today = datetime.today().strftime('%Y_%m_%d')
-        print('now getting record for '+str(today) )
+        print('Getting records for '+str(today) )
+        print('======================')
         file_name = get_raw_data(url,today)
         write_the_data_by_line(file_name,today)
         time.sleep(72000)
@@ -42,10 +43,13 @@ def data_exporter(line,variable,today,pattern=False):
                 data = match.group(1)
                 cleaned = data.replace(":","",1)
                 write_file(variable,today,cleaned)
-                print(msg)
+                print(msg)              
             else:
+                data = match.group(1)
+                cleaned = data.replace("window."+variable+" = ",'')
+                print(cleaned)
+                write_file(variable,today,cleaned)
                 print(msg)
-                write_file(variable,today,line)
         
 
 def write_the_data_by_line(file_name,today):
