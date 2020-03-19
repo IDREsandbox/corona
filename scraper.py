@@ -1,8 +1,9 @@
 import requests
 import lxml.etree,json
 from datetime import datetime
+from datetime import timedelta
 import time
-import os,sys
+import os,sys,re
 
 # function to get the data
 def get_raw_data(url,today):
@@ -32,27 +33,37 @@ def the_scraper(url):
         time.sleep(72000)
         
 
+def data_exporter(line,variable,today,pattern=False):
+    if pattern != False:
+        match = re.search(pattern, line)
+        if match:
+            msg = variable +"_" + today +" data written."
+            if variable == "COUNTY_DATA":
+                data = match.group(1)
+                cleaned = data.replace(":","",1)
+                write_file(variable,today,cleaned)
+                print(msg)
+            else:
+                print(msg)
+                write_file(variable,today,line)
+        
+
 def write_the_data_by_line(file_name,today):
-    count = 0
     the_file = (str(file_name))
     f = open(the_file, "r")
     for count, line in enumerate(f):
-        if count == 0:
-            variable_name = "CALIFORNIA_BY_DAY"
-            data = str(variable_name)+" = "+line  
-            write_file(variable_name,today,data)
-        elif count == 1:
-            variable_name = "COUNTY_DATA"
-            the_line = line.replace('window.COUNTY_DATA','COUNTY_DATA')
-            data = str(the_line)
-            write_file(variable_name,today,data)
-        elif count == 2:
-            variable_name = "STATES"
-            the_line = line.replace('window.STATES','STATES')
-            data = str(the_line)
-            write_file(variable_name,today,data)
-    print('finished scraping for '+ today)
-    print('now waiting 24 hours for next scrape')
+        data_exporter(line,'COUNTY_DATA',today,pattern=r"window\.COUNTY_DATA =.+?(?=:{\")(.*)};")
+        data_exporter(line,'LATIMES_CALIFORNIA_BY_DAY',today,pattern=r"window\.LATIMES_CALIFORNIA_BY_DAY =.+?(?=\[)(.*)]")
+        data_exporter(line,'STATES',today,pattern=r"window.STATES =.+?(?=\[)(.*)];")
+
+    print('======================')
+    print('Finished scraping for '+ today)
+    print('======================')
+    today = datetime.now()
+    delta = timedelta(days=1)
+    tmr = (today + delta).strftime("%a %m/%d at %H:%M:%S")
+    print('Now waiting 24 hours for next scrape on '+ tmr)
+    print('======================')
         
 # main application
 if __name__ == '__main__':
