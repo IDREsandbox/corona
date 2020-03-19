@@ -11,16 +11,17 @@ def get_raw_data(url,today):
     response = requests.get(url,headers=headers)
     js = lxml.etree.HTML(response.content).find('.//body/script').text
     json_objects = js.partition('=')[2].strip()
-    filename = "./data/_raw_"+today+".json"
+    filename = "./data/_raw/_raw_"+today+".json"
     target_file = open(filename,"w+")
     target_file.write(json_objects)
     target_file.close()
     return filename
 
 # function to write the json
-def write_file(variable_name,day,data):
+def write_file(variable_name,day,data,folder=False):
     target_file = variable_name+"_"+day+".json"
-    target = open("./data/"+target_file,"w")
+    target_location = "./data/"+folder+"/"+target_file
+    target = open(target_location,"w")
     target.write(data)
 
 # function for getting the url and time
@@ -42,21 +43,19 @@ def data_exporter(line,variable,today,pattern=False):
             if variable == "COUNTY_DATA":
                 data = match.group(1)
                 cleaned = data.replace(":","",1)
-                write_file(variable,today,cleaned)
+                write_file(variable,today,cleaned,folder="ca")
                 print(msg)
-            if variable == "STATES":
+            elif variable == "STATES":
                 data = match.group(1)
                 cleaned = data.replace("window."+variable+" = ",'')
                 cleaned += ""
-                print(cleaned)
-                write_file(variable,today,cleaned)
-                print(msg)                     
-            else:
+                write_file(variable,today,cleaned,folder="states")
+                print(msg)     
+            elif variable == "LATIMES_CALIFORNIA_BY_DAY":
                 data = match.group(1)
                 cleaned = data.replace("window."+variable+" = ",'')
-                print(cleaned)
-                write_file(variable,today,cleaned)
-                print(msg)
+                write_file(variable,today,cleaned,folder="ca_by_day")
+                print(msg)                                     
         
 
 def write_the_data_by_line(file_name,today):
