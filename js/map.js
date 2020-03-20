@@ -18,8 +18,10 @@
 		confirmed: {},
 		deaths: {},
 		recovered: {}
-	};
+	}
+	corona.animate = true
 	corona.scale = 'log' // log | proportional
+	// corona.scale = 'proportional' // log | proportional
 	corona.data_label = 'confirmed' // deaths | recovered
 	corona.circles = [] //placeholder for the circles
 	corona.currentDate = ''
@@ -39,6 +41,7 @@ const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 
 $(document).ready(function() {
+
 	// hide stuff if mobile
 	if ($(window).width() < 500)
 	{
@@ -50,6 +53,16 @@ $(document).ready(function() {
 	// set the height of the rankings table to half the window height
 	$('#rankingtable-container').height($(window).height()/2)
 
+	// Now set the geo scale (ie, global|ca|la)
+	corona.setGeo()
+
+	// go get the data!
+});
+
+
+corona.setGeo = function()
+{
+	console.log('setting new geo...')
 	// allow url paramter to set the geo scale (global vs LA)
 	const geo = urlParams.get('geo')
 	if(geo !== null)
@@ -61,22 +74,32 @@ $(document).ready(function() {
 	if(corona.geo_scale == 'global')
 	{
 		$('#datasource').html('<a href="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data" target="_blank">COVID-19 Data Repository by Johns Hopkins CSSE</a>')
+		// disable/enable button
+		$('#btn-global').prop('disabled',true)
+		$('#btn-ca').prop('disabled',false)
+		$('#btn-la').prop('disabled',false)
 		corona.getData();
 	}
 	else if (corona.geo_scale == 'la')
 	{
 		$('#datasource').html('<a href="https://www.latimes.com/projects/california-coronavirus-cases-tracking-outbreak/" target="_blank">LA Times</a>')
+		// disable/enable button
+		$('#btn-global').prop('disabled',false)
+		$('#btn-ca').prop('disabled',false)
+		$('#btn-la').prop('disabled',true)
 		corona.getData();
 	}
 	else if (corona.geo_scale == 'ca')
 	{
 		$('#datasource').html('<a href="https://www.latimes.com/projects/california-coronavirus-cases-tracking-outbreak/" target="_blank">LA Times</a>')
+		// disable/enable button
+		$('#btn-global').prop('disabled',false)
+		$('#btn-ca').prop('disabled',true)
+		$('#btn-la').prop('disabled',false)
 		corona.getCAData()
 	}
+}
 
-	// go get the data!
-});
-	
 // holder variables 
 var allResults = [];
 var cafiles = []
@@ -191,6 +214,16 @@ corona.getCAData = function()
 							corona.transposeDataByDate(corona.data.confirmed)
 							corona.transposeDataByDate(corona.data.deaths)
 							corona.setParameters()
+
+							if (typeof corona.map == 'undefined')
+							{
+								corona.setParameters()
+							}
+							else
+							{
+								corona.init()
+							}
+
 	 					}
 
  					})
@@ -198,35 +231,6 @@ corona.getCAData = function()
 			}
 		})
 	})
-}
-
-corona.addLatLonToData = function(data)
-{
-	// var thisdata = Object.values(data)
-	// var thisfips = thisdata[1]
-
-	// join by fips code
-	$.each(confirmed,function(i,val)
-	{
-		if(val[0] == data.fips)
-		{
-			whattoreturn = {county: val[2], state: val[1],lat: val[3], lon: val[4],confirmed: data.confirmed_cases, deaths: data.deaths, fips: data.fips, date: data.date}
-		}
-	})
-			return whattoreturn
-
-}
-
-corona.getLatLonByFIPS = function(fips)
-{
-	$.each(corona.data.ca_counties.data,function(i,val){
-		if(fips == val[4])
-		{
-			latlon = [val[6],val[7]]
-			return false
-		}
-	})
-	return latlon
 }
 
 /***
@@ -273,17 +277,17 @@ corona.getData = function()
 					// transpose data
 					if(typeof corona.data.confirmed.data !== 'undefined')
 					{
-						corona.data.confirmed.max = getMaxData()
+						corona.data.confirmed.max = getMaxData(corona.data.confirmed.data)
 						corona.transposeDataByDate(corona.data.confirmed)
 					}
 					if(typeof corona.data.deaths.data !== 'undefined')
 					{
-						corona.data.deaths.max = getMaxData()
+						corona.data.deaths.max = getMaxData(corona.data.deaths.data)
 						corona.transposeDataByDate(corona.data.deaths)
 					}
 					if(typeof corona.data.recovered.data !== 'undefined')
 					{
-						corona.data.recovered.max = getMaxData()
+						corona.data.recovered.max = getMaxData(corona.data.recovered.data)
 						corona.transposeDataByDate(corona.data.recovered)
 					}
 
@@ -306,6 +310,34 @@ corona.getData = function()
 
 }
 
+corona.addLatLonToData = function(data)
+{
+	// var thisdata = Object.values(data)
+	// var thisfips = thisdata[1]
+
+	// join by fips code
+	$.each(confirmed,function(i,val)
+	{
+		if(val[0] == data.fips)
+		{
+			whattoreturn = {county: val[2], state: val[1],lat: val[3], lon: val[4],confirmed: data.confirmed_cases, deaths: data.deaths, fips: data.fips, date: data.date}
+		}
+	})
+			return whattoreturn
+
+}
+
+corona.getLatLonByFIPS = function(fips)
+{
+	$.each(corona.data.ca_counties.data,function(i,val){
+		if(fips == val[4])
+		{
+			latlon = [val[6],val[7]]
+			return false
+		}
+	})
+	return latlon
+}
 corona.getHeaders=function()
 {
 
@@ -418,7 +450,10 @@ corona.init = function()
 	timebar.update({from:0})
 
 	// start the animation by default
-	corona.animate()
+	if(corona.animate)
+	{
+		corona.startAnimation()
+	}
 
 	// add basemap toggles
 	$('#basemap-light').click(function(){
@@ -431,15 +466,18 @@ corona.init = function()
 		corona.changeBaseMap(2)
 	})
 
+	// enable arrow key navigation
 	$(document).keydown(
 		function(e)
 		{    
 
-			if (e.keyCode == 39) {      
+			if (e.keyCode == 39) {
+				console.log('time shift from '+ timebar.result.from + ' to '+ (timebar.result.from+1)) 
 				timebar.update({from:timebar.result.from+1})
 
 			}
 			if (e.keyCode == 37) {      
+				console.log('time shift from '+ timebar.result.from + ' to '+ (timebar.result.from-1)) 
 				timebar.update({from:timebar.result.from-1})
 
 			}
@@ -454,7 +492,7 @@ corona.init = function()
 	Animate the Map
 
 ***/
-corona.animate = function()
+corona.startAnimation = function()
 {
 	console.log('animating...')
 
@@ -614,13 +652,13 @@ corona.rankingMouseout = function(i)
 function getProportionalCircleSize(num)
 {
 
-	const maxsize = 100
+	const maxsize = 60
 	const minsize = 3
 
 	if(corona.scale == 'proportional')
 	{
 		// anything above this will be the same size
-		const max = corona.data[corona.data_label].max*.75
+		const max = corona.data[corona.data_label].max*.1
 
 
 		if(num>max){
@@ -643,9 +681,9 @@ function getProportionalCircleSize(num)
 		var factor = 2
 		if(corona.geo_scale == 'la')
 		{
-			factor = 4
+			factor = 6
 		}
-		circlesize = Math.log2(num)*factor
+		circlesize = Math.log(num)*factor
 		if(circlesize < minsize)
 		{
 			circlesize = minsize
@@ -835,4 +873,12 @@ corona.toggleInfopanel = function()
 		$('#info-panel').show()
 		corona.infopanel = true
 	}
+}
+
+corona.changeGeo = function(geo)
+{
+	console.log('changing geo...')
+	corona.geo_scale = geo
+	corona.setGeo()
+
 }
