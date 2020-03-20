@@ -1,9 +1,4 @@
 {
-  "date": "2020-03-17",
-  "max_confirmed_cases": 155,
-  "max_deaths": 4,
-  "counties_with_cases": 34,
-  "counties": {
     "101": {
       "county": "Sutter",
       "fips": "101",
@@ -411,4 +406,3 @@
       "date": null
     }
   }
-}
