@@ -817,6 +817,8 @@ corona.setTimebar = function()
 		skin: 	"round",
 		from: 	0,
 		grid: 	true,
+		grid_num: 10,
+		keyboard: true,
 		step:	1,
 		values:	corona.data.headers,
 		onChange: function (data) {
