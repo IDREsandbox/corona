@@ -70,6 +70,7 @@ $(document).ready(function() {
 	}
 	else if (corona.geo_scale == 'ca')
 	{
+		$('#datasource').html('<a href="https://www.latimes.com/projects/california-coronavirus-cases-tracking-outbreak/" target="_blank">LA Times</a>')
 		corona.getCAData()
 	}
 
@@ -88,6 +89,7 @@ corona.getCAData = function()
 	$.when(
 
 		$.get('./data/ca',function(data){ 
+			console.log('getting ca files...')
 			var find =  $(data).find('a')
 			$.each(find,function(i,val){
 				console.log(val)
@@ -129,9 +131,10 @@ corona.getCAData = function()
 				var thisarray = []
 				// loop through each date file
 				$.each(cafiles,function(i,val){
-
+					console.log(val)
 					// get the date from file name to add as headers
-					var header = val.substring(48,58)
+					var header = val.substring(val.length-15,val.length-5)
+					// var header = val.substring(48,58)
 					header = header.substring(5,7)+'/'+header.substring(8,10)+'/'+header.substring(0,2)
 					confirmed[0].push(header)
 
@@ -518,7 +521,10 @@ function getTotalByDate(date)
 	$.each(corona.data[corona.data_label][date],function(i,val){
 		if (typeof val[4] !== 'undefined')
 		{
-			maxdata =  maxdata + parseInt(val[4])
+			if($.isNumeric(val[4]))
+			{
+				maxdata =  maxdata + parseInt(val[4])
+			}
 		}
 	})
 
