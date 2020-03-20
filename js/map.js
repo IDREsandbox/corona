@@ -61,44 +61,146 @@ $(document).ready(function() {
 	if(corona.geo_scale == 'global')
 	{
 		$('#datasource').html('<a href="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data" target="_blank">COVID-19 Data Repository by Johns Hopkins CSSE</a>')
+		corona.getData();
 	}
 	else if (corona.geo_scale == 'la')
 	{
 		$('#datasource').html('<a href="https://www.latimes.com/projects/california-coronavirus-cases-tracking-outbreak/" target="_blank">LA Times</a>')
+		corona.getData();
+	}
+	else if (corona.geo_scale == 'ca')
+	{
+		corona.getCAData()
 	}
 
 	// go get the data!
-	corona.getData();
 });
 	
 var allResults = [];
 
-
-corona.parseCAData = function()
+	var cafiles = []
+var confirmed = []
+corona.getCAData = function()
 {
-	// papa parse is cool!
-	Papa.parse('./data/ca_counties.csv', {
-		download: true,
-		error: function(err, file, inputElem, reason) { alert('Data is not loading properly. Please try again later. (debug:'+reason+')') },
-		complete: function(results,url) {
-			allResults.push(results);
-			console.log(results)
-			// $.getJSON('http://0.0.0.0:8000/covid19/data/COUNTY_DATA_2020_03_17.json',function(data){
-			// 	console.log(data)
-			// })
-		}
-	})
-	Papa.parse('./data/COUNTY_DATA_2020_03_17.json', {
-		download: true,
-		error: function(err, file, inputElem, reason) { alert('Data is not loading properly. Please try again later. (debug:'+reason+')') },
-		complete: function(results,url) {
-			console.log(results)
-			// $.getJSON('http://0.0.0.0:8000/covid19/data/COUNTY_DATA_2020_03_17.json',function(data){
-			// 	console.log(data)
-			// })
-		}
+	console.log('parsing ca...')
+
+	// first get all the CA datasets in the data/ca directory
+	$.when(
+
+		$.get('./data/ca',function(data){ 
+			var find =  $(data).find('a')
+			$.each(find,function(i,val){
+				console.log(val)
+				if(val.text.search('json')>=0)
+				{
+					cafiles.push(window.location.origin+window.location.pathname+'data/ca/'+val.text)
+				}
+			})
+		})
+
+	)
+	.done
+	(function(){
+
+		// papa parse is cool!
+		Papa.parse('./data/ca_counties.csv', {
+			download: true,
+			error: function(err, file, inputElem, reason) { alert('Data is not loading properly. Please try again later. (debug:'+reason+')') },
+			complete: function(master,url) {
+
+				corona.data.ca_counties = master
+				allResults.push(master);
+
+				
+				confirmed.push(['fips','state','county','lat','lon'])
+
+				// add the county data lat/lons to the confirmed data
+				// also add the fips which will be deleted later to conform
+				// with other data formats
+				$.each(master.data,function(i,val){
+					if(i > 0)
+					{
+						var thisrow = [val[4],val[2],val[1],val[6],val[7]]
+						confirmed.push(thisrow)					
+					}
+				})
+
+				// now add the data
+				var thisarray = []
+				// loop through each date file
+				$.each(cafiles,function(i,val){
+
+					// get the date from file name to add as headers
+					var header = val.substring(48,58)
+					header = header.substring(5,7)+'/'+header.substring(8,10)+'/'+header.substring(0,2)
+					confirmed[0].push(header)
+
+					// get the data inside the date file
+					$.getJSON(val,function(data){
+
+						$.each(data, function(i,val){
+							newval = corona.addLatLonToData(val)
+							// add newval to the confirmed data
+							$.each(confirmed,function(i,confirmedvalue){
+								// console.log(val[0])
+								if(confirmedvalue[0]==val.fips)
+								{
+									confirmedvalue.push(val.confirmed_cases)
+									// confirmedvalue.shift()
+								}
+
+							})
+						})
+
+						// when both files have been json'ed
+	 					if (i == cafiles.length-1)
+	 					{
+	 						console.log('both files done...')
+	 						$.each(confirmed,function(i,val){
+	 							val.shift()
+	 						})
+	 						corona.data.confirmed.data = confirmed
+							corona.getHeaders()
+							corona.transposeDataByDate(corona.data.confirmed)
+							corona.setParameters()
+	 					}
+
+ 					})
+				})
+			}
+		})
 	})
 }
+
+corona.addLatLonToData = function(data)
+{
+	// var thisdata = Object.values(data)
+	// var thisfips = thisdata[1]
+
+	// join by fips code
+	$.each(confirmed,function(i,val)
+	{
+		if(val[0] == data.fips)
+		{
+			whattoreturn = {county: val[2], state: val[1],lat: val[3], lon: val[4],confirmed: data.confirmed_cases, deaths: data.deaths, fips: data.fips, date: data.date}
+		}
+	})
+			return whattoreturn
+
+}
+
+corona.getLatLonByFIPS = function(fips)
+{
+	$.each(corona.data.ca_counties.data,function(i,val){
+		if(fips == val[4])
+		{
+			latlon = [val[6],val[7]]
+			return false
+		}
+	})
+	return latlon
+}
+
 /***
 
 	Get the Data from remote sources
@@ -157,22 +259,7 @@ corona.getData = function()
 						corona.transposeDataByDate(corona.data.recovered)
 					}
 
-					// get the headers
-					const headers = []
-					for (var i = corona.data.confirmed.data[0].length - 1; i > 3; i--) {
-						headers.unshift(corona.data.confirmed.data[0][i])
-					}
-
-					corona.data.headers = headers
-					
-					// check data is not empty
-					if(findEmptyData())
-					{
-						corona.data.headers.pop()
-					}
-
-					// update last updated
-					$('#last-updated').html('Last updated: '+corona.data.headers[corona.data.headers.length-1])
+					corona.getHeaders()
 
 					if (typeof corona.map == 'undefined')
 					{
@@ -183,36 +270,36 @@ corona.getData = function()
 						corona.init()
 					}
 
-
-
-					// Do whatever you need to do
 				}
 			}
 		});
 	}
 
-	// if(corona.data_label == 'confirmed cases')
-	// {
-	// 	url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv'
-	// }
-	// else if (corona.data_label == 'deaths')
-	// {
-	// 	url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Deaths.csv'
-	// }
-
-	// Papa.parse(url, {
-	// 	download: true,
-	// 	complete: function(results) {
-
-
-	// 	}
-	// });
 
 }
 
+corona.getHeaders=function()
+{
+
+	// get the headers
+	const headers = []
+	for (var i = corona.data.confirmed.data[0].length - 1; i > 3; i--) {
+		headers.unshift(corona.data.confirmed.data[0][i])
+	}
+
+	corona.data.headers = headers
+	// check data is not empty
+	if(findEmptyData())
+	{
+		corona.data.headers.pop()
+	}
+
+	// update last updated
+	$('#last-updated').html('Last updated: '+corona.data.headers[corona.data.headers.length-1])
+
+}
 corona.transposeDataByDate = function(data)
 {
-	console.log('transposing...')
 	console.log(data)
 	for (var i = data.data[0].length - 1; i >= 0; i--) {
 		
@@ -386,7 +473,6 @@ corona.changeDataLabel = function(label)
 // find the max for any day in the data
 function getMaxData(data)
 {
-	console.log(data)
 	var maxdata = 0
 	// find max num in all of the data
 	$.each(data,function(i,val){
@@ -406,16 +492,16 @@ function getMaxData(data)
 }
 function findEmptyData()
 {
-	var emptydata = false
+	var emptydata = true
 	// find max num in all of the data
 	$.each(corona.data.confirmed.data,function(i,val){
 		for (var i = val.length - 1; i >= 0; i--) {
 			// first 4 columns are not data values
 			if(i>3)
 			{
-				if(val[i] == "")
+				if(val[i] !== '')
 				{
-					emptydata = true
+					emptydata = false
 				}
 			}
 		}
@@ -448,7 +534,6 @@ function getRankingsByDate(date)
 	// rank based on values
 	var ranked = corona.data[corona.data_label][date]
 	var sortedArray = ranked.sort(function(a, b) { return b[4] - a[4]; });
-	// console.log(sortedArray)
 	$.each(sortedArray,function(i,val){
 
 		var deaths = '<span style="opacity:0.5">n/a</span>'
@@ -710,7 +795,6 @@ corona.displayLegend = function()
 
 corona.toggleInfopanel = function()
 {
-	console.log('toggling...')
 	if(corona.infopanel)
 	{
 		$('#info-panel').hide()
