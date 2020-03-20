@@ -77,10 +77,12 @@ $(document).ready(function() {
 	// go get the data!
 });
 	
+// holder variables 
 var allResults = [];
-
-	var cafiles = []
+var cafiles = []
 var confirmed = []
+var deaths = []
+
 corona.getCAData = function()
 {
 	console.log('parsing ca...')
@@ -92,7 +94,6 @@ corona.getCAData = function()
 			console.log('getting ca files...')
 			var find =  $(data).find('a')
 			$.each(find,function(i,val){
-				console.log(val)
 				if(val.text.search('json')>=0)
 				{
 					cafiles.push(window.location.origin+window.location.pathname+'data/ca/'+val.text)
@@ -115,7 +116,9 @@ corona.getCAData = function()
 
 				
 				confirmed.push(['fips','state','county','lat','lon'])
-
+				deaths.push(['fips','state','county','lat','lon'])
+				console.log(confirmed)
+				console.log(deaths)
 				// add the county data lat/lons to the confirmed data
 				// also add the fips which will be deleted later to conform
 				// with other data formats
@@ -124,19 +127,29 @@ corona.getCAData = function()
 					{
 						var thisrow = [val[4],val[2],val[1],val[6],val[7]]
 						confirmed.push(thisrow)					
+						// deaths.push(thisrow)					
 					}
 				})
+				$.each(master.data,function(i,val){
+					if(i > 0)
+					{
+						var thisrow = [val[4],val[2],val[1],val[6],val[7]]
+						// confirmed.push(thisrow)					
+						deaths.push(thisrow)					
+					}
+				})
+				// console.log(deaths)
 
 				// now add the data
 				var thisarray = []
 				// loop through each date file
 				$.each(cafiles,function(i,val){
-					console.log(val)
 					// get the date from file name to add as headers
 					var header = val.substring(val.length-15,val.length-5)
 					// var header = val.substring(48,58)
 					header = header.substring(5,7)+'/'+header.substring(8,10)+'/'+header.substring(0,2)
 					confirmed[0].push(header)
+					deaths[0].push(header)
 
 					// get the data inside the date file
 					$.getJSON(val,function(data){
@@ -145,10 +158,17 @@ corona.getCAData = function()
 							newval = corona.addLatLonToData(val)
 							// add newval to the confirmed data
 							$.each(confirmed,function(i,confirmedvalue){
-								// console.log(val[0])
 								if(confirmedvalue[0]==val.fips)
 								{
 									confirmedvalue.push(val.confirmed_cases)
+									// confirmedvalue.shift()
+								}
+
+							})
+							$.each(deaths,function(i,deathsvalue){
+								if(deathsvalue[0]==val.fips)
+								{
+									deathsvalue.push(val.deaths)
 									// confirmedvalue.shift()
 								}
 
@@ -162,9 +182,14 @@ corona.getCAData = function()
 	 						$.each(confirmed,function(i,val){
 	 							val.shift()
 	 						})
+	 						$.each(deaths,function(i,val){
+	 							val.shift()
+	 						})
 	 						corona.data.confirmed.data = confirmed
+	 						corona.data.deaths.data = deaths
 							corona.getHeaders()
 							corona.transposeDataByDate(corona.data.confirmed)
+							corona.transposeDataByDate(corona.data.deaths)
 							corona.setParameters()
 	 					}
 
@@ -303,7 +328,6 @@ corona.getHeaders=function()
 }
 corona.transposeDataByDate = function(data)
 {
-	console.log(data)
 	for (var i = data.data[0].length - 1; i >= 0; i--) {
 		
 		// data is in the 4th column and beyond
