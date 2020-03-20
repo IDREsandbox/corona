@@ -2,8 +2,8 @@ import requests
 import lxml.etree,json
 from datetime import datetime
 from datetime import timedelta
-import time
-import os,sys,re
+import time,os,sys,re
+from git import Repo
 
 # function to get the data
 def get_raw_data(url,today):
@@ -23,6 +23,7 @@ def write_file(variable_name,day,data,folder=False):
     target_location = "./data/"+folder+"/"+target_file
     target = open(target_location,"w")
     target.write(data)
+    return target_location
 
 # function for getting the url and time
 def the_scraper(url):
@@ -36,6 +37,7 @@ def the_scraper(url):
         
 
 def data_exporter(line,variable,today,pattern=False):
+    file_list = []
     if pattern != False:
         match = re.search(pattern, line)
         if match:
@@ -43,20 +45,36 @@ def data_exporter(line,variable,today,pattern=False):
             if variable == "COUNTY_DATA":
                 data = match.group(1)
                 cleaned = data.replace(":","",1)
-                write_file(variable,today,cleaned,folder="ca")
+                file_list.append(write_file(variable,today,cleaned,folder="ca"))
                 print(msg)
             elif variable == "STATES":
                 data = match.group(1)
                 cleaned = data.replace("window."+variable+" = ",'')
                 cleaned += ""
-                write_file(variable,today,cleaned,folder="states")
+                file_list.append(write_file(variable,today,cleaned,folder="states"))
                 print(msg)     
             elif variable == "LATIMES_CALIFORNIA_BY_DAY":
                 data = match.group(1)
                 cleaned = data.replace("window."+variable+" = ",'')
-                write_file(variable,today,cleaned,folder="ca_by_day")
+                file_list.append(write_file(variable,today,cleaned,folder="ca_by_day"))
                 print(msg)                                     
-        
+    git_push(file_list)
+    return file_list
+# function to push to github
+def git_push(file_list):
+    repo_dir = './'
+    repo = Repo(repo_dir)
+    if file_list != []:
+        commit_message = 'added '+str(file_list)
+        repo.index.add(file_list)
+        repo.index.commit(commit_message)
+        origin = repo.remote('origin')
+        origin.push()
+        print("=============================================")
+        print('Finished adding'+str(file_list)+" to the GitHub Repo.")
+        print("=============================================")
+    return
+
 
 def write_the_data_by_line(file_name,today):
     the_file = (str(file_name))
