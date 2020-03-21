@@ -58,7 +58,7 @@ def data_exporter(line,variable,today,pattern=False):
                 cleaned = data.replace("window."+variable+" = ",'')
                 file_list.append(write_file(variable,today,cleaned,folder="ca_by_day"))
                 print(msg)                                     
-    git_push(file_list)
+    # git_push(file_list)
     return file_list
 # function to push to github
 def git_push(file_list):
