@@ -19,6 +19,7 @@
 		deaths: {},
 		recovered: {}
 	}
+	// corona.animate = false
 	corona.animate = true
 	corona.scale = 'log' // log | proportional
 	// corona.scale = 'proportional' // log | proportional
@@ -63,6 +64,7 @@ $(document).ready(function() {
 corona.setGeo = function()
 {
 	console.log('setting new geo...')
+
 	// allow url paramter to set the geo scale (global vs LA)
 	const geo = urlParams.get('geo')
 	if(geo !== null)
@@ -593,6 +595,7 @@ function getTotalByDate(date)
 	return maxdata
 }
 
+corona.sortedArray = []
 // get rankings for any given day
 function getRankingsByDate(date)
 {
@@ -601,46 +604,56 @@ function getRankingsByDate(date)
 
 	// rank based on values
 	var ranked = corona.data[corona.data_label][date]
-	var sortedArray = ranked.sort(function(a, b) { return b[4] - a[4]; });
-	$.each(sortedArray,function(i,val){
+	corona.sortedArray = ranked.sort(function(a, b) { return b[4] - a[4]; });
+	$.each(corona.sortedArray,function(i,val){
 
-		var deaths = '<span style="opacity:0.5">n/a</span>'
-		var recovered = '<span style="opacity:0.5">n/a</span>'
-		// find death values
-		$.each(corona.data['deaths'][date],function(j,dval){
-			if(val[0] == dval[0] && val[1] == dval[1] && val[2] == dval[2])
-			{
-				deaths = dval[4]
-			}
-		})
-
-		// find death values
-		$.each(corona.data['recovered'][date],function(k,rval){
-			if(val[0] == rval[0] && val[1] == rval[1] && val[2] == rval[2])
-			{
-				recovered = rval[4]
-			}
-		})
-
-		if(val[0] == '')
+		// only show if value is gt 0
+		if(val[4]>0)
 		{
-			var place = val[1]
-		}
-		else
-		{
-			var place = val[1] + ', ' + val[0]
-		}
+			var deaths = '<span style="opacity:0.5">n/a</span>'
+			var recovered = '<span style="opacity:0.5">n/a</span>'
+			// find death values
+			$.each(corona.data['deaths'][date],function(j,dval){
+				if(val[0] == dval[0] && val[1] == dval[1] && val[2] == dval[2])
+				{
+					deaths = dval[4]
+				}
+			})
 
-		$('#rankingtable tbody').append('<tr onmouseover="corona.rankingMouseover('+i+')" onmouseout="corona.rankingMouseout('+i+')"><td>'+place+'</td><td align="right">'+val[4]+'</td><td align="right">'+deaths+'</td><td align="right">'+recovered+'</tr>');
+			// find recovered values
+			$.each(corona.data['recovered'][date],function(k,rval){
+				if(val[0] == rval[0] && val[1] == rval[1] && val[2] == rval[2])
+				{
+					recovered = rval[4]
+				}
+			})
+
+			if(val[0] == '')
+			{
+				var place = val[1]
+			}
+			else
+			{
+				var place = val[1] + ', ' + val[0]
+			}
+
+			$('#rankingtable tbody').append('<tr onmouseover="corona.rankingMouseover('+i+')" onmouseout="corona.rankingMouseout('+i+')"><td>'+place+'</td><td align="right">'+val[4]+'</td><td align="right">'+deaths+'</td><td align="right">'+recovered+'</tr>');
+		}
 	})
 }
 
 var prev_opacity
 corona.rankingMouseover = function(i)
 {
+	console.log(corona.sortedArray[i])
+	// highlight the circle on map
 	prev_opacity = corona.circles[i].options.opacity
 	corona.circles[i].setStyle({weight:2,opacity:1})
 	corona.circles[i].openPopup()
+
+	// draw corresponding chart
+	corona.drawChart(corona.sortedArray[i])
+
 }
 corona.rankingMouseout = function(i)
 {
@@ -789,11 +802,12 @@ corona.mapCoronaData = function(date)
 
 
 			corona.circles[i].on('mouseover',function(e){
-
+				corona.drawChart(val)
 				this.openPopup()
 
 			})
 			corona.circles[i].on('mouseout',function(e){
+				$('#chart-container').hide();
 				this.closePopup()
 			})
 		}
@@ -883,4 +897,42 @@ corona.changeGeo = function(geo)
 	corona.geo_scale = geo
 	corona.setGeo()
 
+}
+
+corona.drawChart = function(data)
+{
+	$('#chart-container').show();
+
+	var thisplace = []
+	// console.log(data[0])
+	$.each(corona.data[corona.data_label].data,function(i,val){
+		// console.log(val)
+		// if(($.inArray(data[0],val)>=0))
+		if(($.inArray(data[1],val)>=0) && ($.inArray(data[0],val)>=0))
+		{
+			// console.log('found val ')
+			thisplace = val
+			console.log(val)
+
+
+		}
+	})
+
+	// get rid of first 4 coloumns
+	// var datatochart = thisplace.slice(4,100000000000)
+	var datatochart = thisplace.slice(4,100000000000)
+	console.log(datatochart)
+	new Chartist.Line('.ct-chart', {
+		// labels: corona.data.headers,
+		series: [
+			datatochart
+			// [1,2,3,3,3,4,5]
+		]
+		}, {
+			fullWidth: true,
+			height: 100,
+			chartPadding: {
+			right: 0
+		}
+	});
 }
