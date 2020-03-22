@@ -183,7 +183,9 @@ corona.getCAData = function()
 							newval = corona.addLatLonToData(val)
 							// add newval to the confirmed data
 							$.each(confirmed,function(i,confirmedvalue){
-								if(confirmedvalue[0]==val.fips)
+
+								if(confirmedvalue[2]==val.county)
+								// if(confirmedvalue[0]==val.fips)
 								{
 									confirmedvalue.push(val.confirmed_cases)
 									// confirmedvalue.shift()
@@ -191,7 +193,8 @@ corona.getCAData = function()
 
 							})
 							$.each(deaths,function(i,deathsvalue){
-								if(deathsvalue[0]==val.fips)
+								if(deathsvalue[2]==val.county)
+								// if(deathsvalue[0]==val.fips)
 								{
 									deathsvalue.push(val.deaths)
 									// confirmedvalue.shift()
