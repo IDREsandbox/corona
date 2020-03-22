@@ -42,7 +42,7 @@ def data_exporter(line,variable,today,pattern=False):
         match = re.search(pattern, line)
         if match:
             msg = variable +"_" + today +" data written."
-            if variable == "COUNTY_DATA":
+            if variable == "COUNTIES_TOTALS":
                 data = match.group(1)
                 cleaned = data.replace(":","",1)
                 file_list.append(write_file(variable,today,cleaned,folder="ca"))
@@ -52,6 +52,12 @@ def data_exporter(line,variable,today,pattern=False):
                 cleaned = data.replace("window."+variable+" = ",'')
                 cleaned += ""
                 file_list.append(write_file(variable,today,cleaned,folder="states"))
+                print(msg)     
+            elif variable == "LA_CITY_TOTALS":
+                data = match.group(1)
+                cleaned = data.replace("window."+variable+" = ",'')
+                cleaned += ""
+                file_list.append(write_file(variable,today,cleaned,folder="la"))
                 print(msg)     
             elif variable == "LATIMES_CALIFORNIA_BY_DAY":
                 data = match.group(1)
@@ -80,8 +86,9 @@ def write_the_data_by_line(file_name,today):
     the_file = (str(file_name))
     f = open(the_file, "r")
     for count, line in enumerate(f):
-        data_exporter(line,'COUNTY_DATA',today,pattern=r"window\.COUNTY_DATA =.+?(?=:{\")(.*)};")
+        data_exporter(line,'COUNTIES_TOTALS',today,pattern=r"window\.COUNTIES_TOTALS =.+?(?=:{\")(.*)};")
         data_exporter(line,'LATIMES_CALIFORNIA_BY_DAY',today,pattern=r"window\.LATIMES_CALIFORNIA_BY_DAY =.+?(?=\[)(.*)]")
+        data_exporter(line,'LA_CITY_TOTALS',today,pattern=r"window\.LA_CITY_TOTALS =.+?(?=\[)(.*)]")
         data_exporter(line,'STATES',today,pattern=r"window.STATES =.+?(?=\[)(.*);")
 
     print('======================')
