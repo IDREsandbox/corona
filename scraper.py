@@ -45,7 +45,7 @@ def data_exporter(line,variable,today,pattern=False):
             if variable == "COUNTIES_TOTALS":
                 data = match.group(1)
                 cleaned = data.replace(":","",1)
-                file_list.append(write_file(variable,today,cleaned,folder="ca"))
+                file_list.append(write_file("COUNTY_DATA",today,cleaned,folder="ca"))
                 print(msg)
             elif variable == "STATES":
                 data = match.group(1)
