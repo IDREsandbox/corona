@@ -58,10 +58,10 @@
 	<script src="js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 
 
-	<!-- charts
-	<link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
-	<script src="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
- -->
+	<!-- charts -->
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
+    <script src="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
+
 	<link rel="stylesheet" href="styles/style.css">
 
 </head>
@@ -110,6 +110,7 @@
 	</div>
 </div> 
 
+
 <!-- data display -->
 <div class="col-sm-2" align="center" style="position:absolute;left:10px; bottom:20px;z-index:999;">
 	<div align="center"  style=" background-color:rgba(255,255,255,0.7);padding:5px;">
@@ -139,10 +140,16 @@
 <div class="row justify-content-md-center">
 	<div class="col-sm-8" align="center" style="position:absolute; top:20px;z-index:999;">
 		<div class="col-md-auto" style=" background-color:rgba(0,0,0,0.5);padding:10px;">
-			<!-- chart -->
-			<div class="ct-chart " style="display:none;"></div>
 			<!-- timebar -->
 			<input type="text" id="timebar" style=""></input>
+		</div>
+	</div>
+</div>
+
+<div id="chart-container" style="display:none;" class="row justify-content-md-center">
+	<div class="col-sm-8" align="center" style="position:absolute; bottom:20px;z-index:999;">
+		<div class="col-md-auto" style=" background-color:rgba(0,0,0,0.5);padding:10px;">
+			<div class="ct-chart">chart me</div>
 		</div>
 	</div>
 </div>
