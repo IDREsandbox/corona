@@ -109,7 +109,7 @@ def github_commit(today):
     cp = run("git pull", shell=True)
     cp = run("git add .", shell=True)
     message = "AUTO: "+str(today)+ "data added."
-    cp = run(f"git commit -am "+message, shell=True)
+    cp = run("git commit -am "+message, shell=True)
     cp = run("git push -u origin master -f", shell=True)
 
     
