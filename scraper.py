@@ -3,6 +3,7 @@ import lxml.etree,json
 from datetime import datetime
 from datetime import timedelta
 import time,os,sys,re
+import subprocess as cmd
 from git import Repo
 
 # function to get the data
@@ -72,16 +73,46 @@ def git_push(file_list):
     repo = Repo(repo_dir)
     if file_list != []:
         commit_message = 'added '+str(file_list)
+        origin = repo.remote('origin')
+        origin.pull()
         repo.index.add(file_list)
         repo.index.commit(commit_message)
-        origin = repo.remote('origin')
         origin.push()
         print("=============================================")
         print('Finished adding'+str(file_list)+" to the GitHub Repo.")
         print("=============================================")
     return
 
+def run(*popenargs, **kwargs):
+    input = kwargs.pop("input", None)
+    check = kwargs.pop("handle", False)
 
+    if input is not None:
+        if 'stdin' in kwargs:
+            raise ValueError('stdin and input arguments may not both be used.')
+        kwargs['stdin'] = cmd.PIPE
+
+    process = cmd.Popen(*popenargs, **kwargs)
+    try:
+        stdout, stderr = process.communicate(input)
+    except:
+        process.kill()
+        process.wait()
+        raise
+    retcode = process.poll()
+    if check and retcode:
+        raise cmd.CalledProcessError(
+            retcode, process.args, output=stdout, stderr=stderr)
+    return retcode, stdout, stderr
+
+def github_commit(today):
+    cp = run("git pull", shell=True)
+    cp = run("git add .", shell=True)
+    message = "AUTO: "+str(today)+ "data added."
+    cp = run(f"git commit -am "+message, shell=True)
+    cp = run("git push -u origin master -f", shell=True)
+
+    
 def write_the_data_by_line(file_name,today):
     the_file = (str(file_name))
     f = open(the_file, "r")
@@ -96,6 +127,7 @@ def write_the_data_by_line(file_name,today):
     print('======================')
     today = datetime.now()
     delta = timedelta(days=1)
+    github_commit(today)
     tmr = (today + delta).strftime("%a %m/%d at %H:%M:%S")
     print('Now waiting 24 hours for next scrape on '+ tmr)
     print('======================')
