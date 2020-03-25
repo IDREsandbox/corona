@@ -39,58 +39,40 @@
 	<script src="js/moment.js"></script>
 	<script src="js/papaparse.min.js"></script>
 	<script src="js/jquery.sparkline.min.js"></script>
-	<!-- <script src="js/jquery-csv.js"></script> -->
-	<!-- <script src="js/topojson.v1.min.js"></script> -->
 
-
-
-	<!-- rangeSlider
-	<script src="js/rangeSlider/js/ion-rangeSlider/ion.rangeSlider.min.js"></script>
-	<link rel="stylesheet" href="js/rangeSlider/css/ion.rangeSlider.css" />
-	<link rel="stylesheet" href="js/rangeSlider/css/ion.rangeSlider.skinFlat.css" />
- -->
 	<!-- bootstrap -->
-
-
 	<link href="css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 	<script src="js/popper.min.js" crossorigin="anonymous"></script>
 	<script src="js/bootstrap.min.js" crossorigin="anonymous"></script>
 	<script src="js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 
-
 	<!-- charts -->
     <link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
     <script src="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
-
 	<link rel="stylesheet" href="styles/style.css">
 
 </head>
 <body>
 
-
+<!-- map -->
 <div class="container-fluid h-100">
 	<!-- <div class="row h-100" style="padding-top:56px"> -->
 	<div class="row h-100" >
 		<!-- left side: map -->
 		<div class="col-sm-12 fill no-padding">
 			<div id="map"></div>
-			<!-- <div class='nav-overlay'></div> -->
 		</div>
 	</div>
 </div>
 
-
-
-
-
-<!-- ucla logo -->
+<!-- ucla oit logo -->
 
 <div id="logo" class="col-sm-2" id="data-panel" style="position: absolute;top:20px;left: 10px;background-color: rgba(255,255,255,0.8);z-index:999;">
-	<div><a href="http://ucla.edu" target="_blank"><img src="images/ucla.png" width="80"></a></div>
+	<div><a href="http://ucla.edu" target="_blank"><img src="images/oit.png" width="100%" style="margin-left:-10px"></a></div>
 	<!-- <h2>UCLA </h2> -->
 	<div id="info-panel">
-		<a href="https://idre.ucla.edu/" target="_blank">UCLA IDRE</a> COVID-19 Maproom<br>
-		<button id="btn-global" class="btn btn-info btn-sm" onclick="window.location.href = '?geo=global'">global</button>
+		<!-- <a href="https://idre.ucla.edu/" target="_blank">UCLA IDRE</a> COVID-19 Maproom<br> -->
+		<button id="btn-global" class="btn btn-info btn-sm" onclick="window.location.href = '?geo=global'">Global</button>
 		<button id="btn-ca" class="btn btn-info btn-sm" onclick="window.location.href = '?geo=ca'">California</button>
 		<button id="btn-la" class="btn btn-info btn-sm" onclick="window.location.href = '?geo=la'">Los Angeles</button>
 		<br>
