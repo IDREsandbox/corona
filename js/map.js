@@ -44,6 +44,10 @@ const urlParams = new URLSearchParams(queryString);
 
 $(document).ready(function() {
 
+	// put the about stuff in the modal
+	$('.modal-body').load('about.html')
+	$('#coronamodal').modal('show')
+
 	// hide stuff if mobile
 	if ($(window).width() < 500)
 	{
@@ -55,8 +59,11 @@ $(document).ready(function() {
 	// set the height of the rankings table to half the window height
 	$('#rankingtable-container').height($(window).height()/2)
 
+	// $("#coronamodal").on("hidden.bs.modal", function () {
+		corona.setGeo()
+	// });
+
 	// Now set the geo scale (ie, global|ca|la)
-	corona.setGeo()
 
 	// go get the data!
 });
@@ -455,12 +462,6 @@ corona.init = function()
 
 	timebar.update({from:0})
 
-	// start the animation by default
-	if(corona.animate)
-	{
-		corona.startAnimation()
-	}
-
 	// add basemap toggles
 	$('#basemap-light').click(function(){
 		corona.changeBaseMap(0)
@@ -489,6 +490,17 @@ corona.init = function()
 			}
 		}
 	);
+
+	// start the animation by default
+	if(corona.animate)
+	{
+
+		$("#coronamodal").on("hidden.bs.modal", function () {
+			corona.startAnimation()
+		});
+
+	}
+
 
 
 }
