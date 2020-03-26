@@ -30,7 +30,8 @@
 	corona.geo_scale = 'global' // global | la
 	corona.urls = {
 		// global: ["https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv", "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Deaths.csv","https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv"],
-		global: ["https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv", "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv","https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv"],
+		global: ["https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv", "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"],
+		// global: ["https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv", "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv","https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv"],
 		la: ["./data/COVID19LA_confirmed.csv"]
 	}
 
@@ -276,10 +277,10 @@ corona.getData = function()
 				{
 					corona.data.deaths = results
 				}
-				else if (url == urls[2])
-				{
-					corona.data.recovered = results
-				}
+				// else if (url == urls[2])
+				// {
+				// 	corona.data.recovered = results
+				// }
 
 				// when all three datasets are loaded, then...
 				if (allResults.length == urls.length)
@@ -298,11 +299,11 @@ corona.getData = function()
 						corona.data.deaths.max = getMaxData(corona.data.deaths.data)
 						corona.transposeDataByDate(corona.data.deaths)
 					}
-					if(typeof corona.data.recovered.data !== 'undefined')
-					{
-						corona.data.recovered.max = getMaxData(corona.data.recovered.data)
-						corona.transposeDataByDate(corona.data.recovered)
-					}
+					// if(typeof corona.data.recovered.data !== 'undefined')
+					// {
+					// 	corona.data.recovered.max = getMaxData(corona.data.recovered.data)
+					// 	corona.transposeDataByDate(corona.data.recovered)
+					// }
 
 					corona.getHeaders()
 
@@ -517,7 +518,7 @@ corona.startAnimation = function()
 	// disable buttons while animating
 	$('#btn-confirmed').prop('disabled',true)
 	$('#btn-deaths').prop('disabled',true)
-	$('#btn-recovered').prop('disabled',true)
+	// $('#btn-recovered').prop('disabled',true)
 
 	time = 200
 	// loop through each date, wait, and then go to the next one
@@ -536,10 +537,10 @@ corona.startAnimation = function()
 				{
 					$('#btn-deaths').prop('disabled',false)
 				}
-				if(typeof corona.data['recovered'].data !== 'undefined')
-				{
-					$('#btn-recovered').prop('disabled',false)
-				}
+				// if(typeof corona.data['recovered'].data !== 'undefined')
+				// {
+				// 	$('#btn-recovered').prop('disabled',false)
+				// }
 			},time*i)
 		}
 	})
@@ -550,7 +551,8 @@ corona.startAnimation = function()
 corona.changeDataLabel = function(label)
 {
 	corona.data_label = label
-	corona.init()
+	corona.startAnimation()
+	// corona.init()
 }
 
 // find the max for any day in the data
@@ -627,7 +629,7 @@ function getRankingsByDate(date)
 		if(val[4]>0)
 		{
 			var deaths = '<span style="opacity:0.5">n/a</span>'
-			var recovered = '<span style="opacity:0.5">n/a</span>'
+			// var recovered = '<span style="opacity:0.5">n/a</span>'
 			// find death values
 			$.each(corona.data['deaths'][date],function(j,dval){
 				if(val[0] == dval[0] && val[1] == dval[1] && val[2] == dval[2])
@@ -636,13 +638,13 @@ function getRankingsByDate(date)
 				}
 			})
 
-			// find recovered values
-			$.each(corona.data['recovered'][date],function(k,rval){
-				if(val[0] == rval[0] && val[1] == rval[1] && val[2] == rval[2])
-				{
-					recovered = rval[4]
-				}
-			})
+			// // find recovered values
+			// $.each(corona.data['recovered'][date],function(k,rval){
+			// 	if(val[0] == rval[0] && val[1] == rval[1] && val[2] == rval[2])
+			// 	{
+			// 		recovered = rval[4]
+			// 	}
+			// })
 
 			if(val[0] == '')
 			{
@@ -653,7 +655,8 @@ function getRankingsByDate(date)
 				var place = val[1] + ', ' + val[0]
 			}
 
-			$('#rankingtable tbody').append('<tr onmouseover="corona.rankingMouseover('+i+')" onmouseout="corona.rankingMouseout('+i+')"><td>'+place+'</td><td align="right">'+val[4]+'</td><td align="right">'+deaths+'</td><td align="right">'+recovered+'</tr>');
+			$('#rankingtable tbody').append('<tr onmouseover="corona.rankingMouseover('+i+')" onmouseout="corona.rankingMouseout('+i+')"><td>'+place+'</td><td align="right">'+val[4]+'</td><td align="right">'+deaths+'</td></tr>');
+			// $('#rankingtable tbody').append('<tr onmouseover="corona.rankingMouseover('+i+')" onmouseout="corona.rankingMouseout('+i+')"><td>'+place+'</td><td align="right">'+val[4]+'</td><td align="right">'+deaths+'</td><td align="right">'+recovered+'</td></tr>');
 		}
 	})
 }
@@ -675,6 +678,7 @@ corona.rankingMouseout = function(i)
 {
 	// prev_opacity = corona.circles[i].options.opacity
 	corona.circles[i].setStyle({weight:1,opacity:prev_opacity})
+	corona.circles[i].closePopup()
 }
 
 // this determines the size of the circles
@@ -917,6 +921,17 @@ corona.changeGeo = function(geo)
 
 corona.drawChart = function(data)
 {
+	console.log(data)
+	if(data[0] == '')
+	{
+		var thistitle = data[1]
+	}
+	else
+	{
+		var thistitle = data[1]+', '+data[0]
+	}
+
+	$('#chart-title').html(thistitle)
 	$('#chart-container').show();
 
 	var thisplace = []
@@ -937,7 +952,7 @@ corona.drawChart = function(data)
 	// get rid of first 4 coloumns
 	// var datatochart = thisplace.slice(4,100000000000)
 	var datatochart = thisplace.slice(4,100000000000)
-	console.log(datatochart)
+	// console.log(datatochart)
 	new Chartist.Line('.ct-chart', {
 		// labels: corona.data.headers,
 		series: [

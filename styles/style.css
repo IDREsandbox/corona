@@ -27,6 +27,15 @@ p,li {
 	margin: 10px;
 	text-align: left;
 }
+
+.btn-group-sm>.btn, .btn-sm {
+    padding: .1rem .3rem;
+    font-size: .875rem;
+    line-height: 1.5;
+    border-radius: .2rem;
+    margin: 1px;
+}
+
 .irs--round .irs-grid-text {
 	font-size: 0.8em;
 }
