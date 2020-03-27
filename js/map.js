@@ -15,9 +15,15 @@
 
 	var corona = {};
 	corona.data = {
-		confirmed: {},
-		deaths: {},
-		recovered: {}
+		confirmed: {
+			data: []
+		},
+		deaths: {
+			data: []
+		},
+		recovered: {
+			data: []
+		}
 	}
 	// corona.animate = false
 	corona.animate = true
@@ -27,12 +33,14 @@
 	corona.circles = [] //placeholder for the circles
 	corona.currentDate = ''
 	corona.infopanel = false
-	corona.geo_scale = 'global' // global | la
+	corona.data.headers = []
+	corona.geo_scale = 'us' // global | la
 	corona.urls = {
 		// global: ["https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv", "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Deaths.csv","https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv"],
 		global: ["https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv", "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"],
 		// global: ["https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv", "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv","https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv"],
-		la: ["./data/COVID19LA_confirmed.csv"]
+		la: ["./data/COVID19LA_confirmed.csv"],
+		us: ["https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-26-2020.csv","https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-25-2020.csv","https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-24-2020.csv","https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-23-2020.csv","https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-22-2020.csv"]
 	}
 
 /***
@@ -60,13 +68,7 @@ $(document).ready(function() {
 	// set the height of the rankings table to half the window height
 	$('#rankingtable-container').height($(window).height()/2)
 
-	// $("#coronamodal").on("hidden.bs.modal", function () {
-		corona.setGeo()
-	// });
-
-	// Now set the geo scale (ie, global|ca|la)
-
-	// go get the data!
+	corona.setGeo()
 });
 
 
@@ -81,7 +83,7 @@ corona.setGeo = function()
 		corona.geo_scale = geo
 	}
 
-	// change the data source based on the data
+	// change the data source based on the data and route to the right "get data" function
 	if(corona.geo_scale == 'global')
 	{
 		$('#datasource').html('<a href="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data" target="_blank">COVID-19 Data Repository by Johns Hopkins CSSE</a>')
@@ -89,6 +91,7 @@ corona.setGeo = function()
 		$('#btn-global').prop('disabled',true)
 		$('#btn-ca').prop('disabled',false)
 		$('#btn-la').prop('disabled',false)
+		$('#btn-us').prop('disabled',false)
 		corona.getData();
 	}
 	else if (corona.geo_scale == 'la')
@@ -98,6 +101,9 @@ corona.setGeo = function()
 		$('#btn-global').prop('disabled',false)
 		$('#btn-ca').prop('disabled',false)
 		$('#btn-la').prop('disabled',true)
+		$('#btn-us').prop('disabled',false)
+		// no death data in LA
+		$('#btn-deaths').hide()
 		corona.getData();
 	}
 	else if (corona.geo_scale == 'ca')
@@ -107,7 +113,18 @@ corona.setGeo = function()
 		$('#btn-global').prop('disabled',false)
 		$('#btn-ca').prop('disabled',true)
 		$('#btn-la').prop('disabled',false)
+		$('#btn-us').prop('disabled',false)
 		corona.getCAData()
+	}
+	else if (corona.geo_scale == 'us')
+	{
+		$('#datasource').html('<a href="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data" target="_blank">COVID-19 Data Repository by Johns Hopkins CSSE</a>')
+		// disable/enable button
+		$('#btn-global').prop('disabled',false)
+		$('#btn-ca').prop('disabled',false)
+		$('#btn-la').prop('disabled',false)
+		$('#btn-us').prop('disabled',true)
+		corona.getUSData()
 	}
 }
 
@@ -125,7 +142,6 @@ corona.getCAData = function()
 	$.when(
 
 		$.get('./data/ca',function(data){ 
-			console.log('getting ca files...')
 			var find =  $(data).find('a')
 			$.each(find,function(i,val){
 				if(val.text.search('json')>=0)
@@ -151,8 +167,6 @@ corona.getCAData = function()
 				
 				confirmed.push(['fips','state','county','lat','lon'])
 				deaths.push(['fips','state','county','lat','lon'])
-				console.log(confirmed)
-				console.log(deaths)
 				// add the county data lat/lons to the confirmed data
 				// also add the fips which will be deleted later to conform
 				// with other data formats
@@ -172,7 +186,6 @@ corona.getCAData = function()
 						deaths.push(thisrow)					
 					}
 				})
-				// console.log(deaths)
 
 				// now add the data
 				var thisarray = []
@@ -227,7 +240,7 @@ corona.getCAData = function()
 							corona.getHeaders()
 							corona.transposeDataByDate(corona.data.confirmed)
 							corona.transposeDataByDate(corona.data.deaths)
-							corona.setParameters()
+							// corona.setParameters()
 
 							if (typeof corona.map == 'undefined')
 							{
@@ -252,6 +265,116 @@ corona.getCAData = function()
 	Get the Data from remote sources
 
 ***/
+corona.getUSData = function()
+{
+	console.log('parsing usa data...')
+	// get the right data based on the geo requested
+	var urls = corona.urls[corona.geo_scale]
+	var counter = 0
+
+	// add the data to corona.confirmed.data
+	corona.data.confirmed.data.push(['city','state','lat','lon'])
+	corona.data.deaths.data.push(['city','state','lat','lon'])
+
+	// for each data url, parse the csv and convert to JSON
+	for (var i = 0; i < urls.length; i++)
+	{
+		// papa parse is cool!
+		Papa.parse(urls[i], {
+			download: true,
+			error: function(err, file, inputElem, reason) { alert('Data is not loading properly. Please try again later. (debug:'+reason+')') },
+			complete: function(master,url) {
+
+				// clear data if it exists
+				confirmed = []
+				deaths = []
+				allResults.push(master);
+				counter++
+
+				// get header from file name
+				var header = url.substring(url.length-19,url.length-5)
+				header = header.substring(5,7)+'/'+header.substring(8,10)+'/'+header.substring(11,13)
+
+				// add to headers
+				corona.data.headers.push(header)
+
+				// add the county data lat/lons to the confirmed data
+				// also add the fips which will be deleted later to conform
+				// with other data formats
+				/*
+
+					data format:
+					["FIPS", "Admin2", "Province_State", "Country_Region", "Last_Update", "Lat", "Long_", "Confirmed", "Deaths", "Recovered", "Active", "Combined_Key"]
+
+				*/
+				$.each(master.data,function(i,val){
+					if(val[3] == 'US' && Number(val[6]) !== 0) // only if US
+					{
+						var confirmedrow = [val[1],val[2],val[5],val[6],val[7]]
+						var deathrow = [val[1],val[2],val[5],val[6],val[8]]
+						var recoveredrow = [val[1],val[2],val[5],val[6],val[9]]
+						confirmed.push(confirmedrow)					
+						deaths.push(deathrow)					
+					}
+				})
+
+				// add to corona data by date
+				corona.data.confirmed[header] = confirmed
+				corona.data.deaths[header] = deaths
+
+				// when both files have been json'ed
+				if (counter == urls.length)
+				{
+
+					// sort the headers because they don't necessarily come in order (it's an ajax thing)
+					corona.data.headers.sort()
+
+					// Now that all the data is in, create the data format for the chart
+					$.each(corona.data.headers,function(i,header){
+						// for the first row, add the header
+						corona.data.confirmed.data[0].push(header)
+						corona.data.deaths.data[0].push(header)
+						// note the position in the array it was added to
+						pos = corona.data.confirmed.data.length
+						// now loop through each value for that date, and add it 
+						$.each(corona.data.confirmed[header],function(j,val2){
+							// see if this place exists already
+							var exists_or_not = corona.data.confirmed.data.find(function(data){
+								return data[0] == val2[0] && data[1] == val2[1]
+							})
+							if(exists_or_not == undefined) //it doesn't exist so add new row
+							{
+								corona.data.confirmed.data.push(val2)
+								corona.data.deaths.data.push(val2)
+							}
+							else //it exists, append to it
+							{
+								// where is it?
+								var index = corona.data.confirmed.data.indexOf(exists_or_not)
+								// add the value
+								corona.data.confirmed.data[index].push(val2[4])
+								corona.data.deaths.data[index].push(val2[4])
+							}
+						})
+
+					})
+
+					if (typeof corona.map == 'undefined')
+					{
+						corona.setParameters()
+					}
+					else
+					{
+						corona.init()
+					}
+				}
+			}
+		})
+	}
+
+}
+
+
 corona.getData = function()
 {
 	
@@ -267,7 +390,7 @@ corona.getData = function()
 			error: function(err, file, inputElem, reason) { alert('Data is not loading properly. Please try again later. (debug:'+reason+')') },
 			complete: function(results,url) {
 				allResults.push(results);
-
+				console.log(url)
 				// add data to object
 				if(url == urls[0])
 				{
@@ -294,7 +417,7 @@ corona.getData = function()
 						corona.data.confirmed.max = getMaxData(corona.data.confirmed.data)
 						corona.transposeDataByDate(corona.data.confirmed)
 					}
-					if(typeof corona.data.deaths.data !== 'undefined')
+					if(typeof corona.data.deaths.data.length > 0)
 					{
 						corona.data.deaths.max = getMaxData(corona.data.deaths.data)
 						corona.transposeDataByDate(corona.data.deaths)
@@ -445,7 +568,6 @@ corona.setParameters = function()
 	corona.basemap = corona.basemaps[1] //0: light 1: dark 2: satellite
 	corona.map.setView([20,30], 2);
 	corona.map.addLayer(corona.basemap); 
-	// corona.displayLegend();
 
 	// add the timebar
 	corona.setTimebar();
@@ -664,7 +786,6 @@ function getRankingsByDate(date)
 var prev_opacity
 corona.rankingMouseover = function(i)
 {
-	console.log(corona.sortedArray[i])
 	// highlight the circle on map
 	prev_opacity = corona.circles[i].options.opacity
 	corona.circles[i].setStyle({weight:2,opacity:1})
@@ -685,13 +806,13 @@ corona.rankingMouseout = function(i)
 function getProportionalCircleSize(num)
 {
 
-	const maxsize = 60
-	const minsize = 3
+	var maxsize = 60
+	var minsize = 2
 
 	if(corona.scale == 'proportional')
 	{
 		// anything above this will be the same size
-		const max = corona.data[corona.data_label].max*.1
+		var max = corona.data[corona.data_label].max*.1
 
 
 		if(num>max){
@@ -703,6 +824,7 @@ function getProportionalCircleSize(num)
 			circlesize = minsize
 		}
 	}
+
 	/***
 		
 		logarithmic numbers allows outliers,
@@ -714,9 +836,14 @@ function getProportionalCircleSize(num)
 		var factor = 2
 		if(corona.geo_scale == 'la')
 		{
-			factor = 6
+			factor = 2
 		}
-		circlesize = Math.log(num)*factor
+		if(corona.geo_scale == 'us')
+		{
+			factor = 2
+			minsize = 1
+		}
+		circlesize = Math.log2(num)*factor
 		if(circlesize < minsize)
 		{
 			circlesize = minsize
@@ -789,7 +916,7 @@ corona.mapCoronaData = function(date)
 			cur_day_value = val[4]
 			percent_increase = Math.round((cur_day_value- prev_day_value)/prev_day_value*100)
 
-			if(percent_increase>50)
+			if(percent_increase>40)
 			{
 				fillColor = '#de2d26',
 				fillOpacity = 0.6
@@ -834,7 +961,45 @@ corona.mapCoronaData = function(date)
 		
 	})
 	var circlegroup = new L.featureGroup(corona.circles)
-	corona.map.fitBounds(circlegroup.getBounds())
+
+	// if usa, set bounds
+	if(corona.geo_scale == 'us')
+	{
+
+		var usaBounds = [
+			[1.137353581598554,-168.69644165039065], //Southwest
+			[58.67426035784768,-27.983551025390625]  //Northeast
+		];
+		corona.map.setMaxBounds(usaBounds)
+		corona.map.fitBounds(usaBounds)
+
+	}
+	else if(corona.geo_scale == 'ca')
+	{
+
+		var caBounds = [
+			[28.684338162917783,-133.99792671203616], //Southwest
+			[43.12786211357268,-104.44470405578615]  //Northeast
+		];
+		corona.map.setMaxBounds(caBounds)
+		corona.map.fitBounds(caBounds)
+
+	}
+	else if(corona.geo_scale == 'la')
+	{
+
+		var laBounds = [
+			[33.247875947924385,-120.35247802734376],
+			[34.99175369350488,-115.95520019531251]  //Northeast
+		];
+		corona.map.setMaxBounds(laBounds)
+		corona.map.fitBounds(laBounds)
+
+	}
+	else
+	{
+		corona.map.fitBounds(circlegroup.getBounds())
+	}
 }
 
 /***
@@ -873,44 +1038,6 @@ corona.changeBaseMap = function(i)
 	corona.map.addLayer(corona.basemap)
 }
 
-corona.displayLegend = function()
-{
-	var html = ''
-	$.each(corona.colorPallete,function(i,val){
-		if(i == corona.colorPallete.length-1)
-		{
-			rightside = '未満'
-		}
-		else if (i == 0)
-		{
-			rightside = '以上'
-		}
-		else
-		{
-			rightside = '~'+corona.dataBreaks[i-1]
-		}
-
-		html += '<tr><td style="background-color:'+val+'"> </td>'
-		html += '<td>'+corona.dataBreaks[i]+rightside+'</td></tr>'
-	})
-	$('#data-legend > tbody:last-child').append(html);
-
-}
-
-corona.toggleInfopanel = function()
-{
-	if(corona.infopanel)
-	{
-		$('#info-panel').hide()
-		corona.infopanel = false
-	}
-	else
-	{
-		$('#info-panel').show()
-		corona.infopanel = true
-	}
-}
-
 corona.changeGeo = function(geo)
 {
 	console.log('changing geo...')
@@ -921,7 +1048,6 @@ corona.changeGeo = function(geo)
 
 corona.drawChart = function(data)
 {
-	console.log(data)
 	if(data[0] == '')
 	{
 		var thistitle = data[1]
@@ -935,24 +1061,17 @@ corona.drawChart = function(data)
 	$('#chart-container').show();
 
 	var thisplace = []
-	// console.log(data[0])
 	$.each(corona.data[corona.data_label].data,function(i,val){
-		// console.log(val)
 		// if(($.inArray(data[0],val)>=0))
 		if(($.inArray(data[1],val)>=0) && ($.inArray(data[0],val)>=0))
 		{
-			// console.log('found val ')
 			thisplace = val
-			console.log(val)
-
-
 		}
 	})
 
 	// get rid of first 4 coloumns
 	// var datatochart = thisplace.slice(4,100000000000)
 	var datatochart = thisplace.slice(4,100000000000)
-	// console.log(datatochart)
 	new Chartist.Line('.ct-chart', {
 		// labels: corona.data.headers,
 		series: [
