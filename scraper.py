@@ -5,6 +5,7 @@ from datetime import timedelta
 import time,os,sys,re
 import subprocess as cmd
 from git import Repo
+from jh import jhscraper, get_jh_data
 
 # function to get the data
 def get_raw_data(url,today):
@@ -34,6 +35,7 @@ def the_scraper(url):
         print('======================')
         file_name = get_raw_data(url,today)
         write_the_data_by_line(file_name,today)
+        jhscraper()
         time.sleep(72000)
         
 
