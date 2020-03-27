@@ -840,7 +840,7 @@ function getProportionalCircleSize(num)
 		}
 		if(corona.geo_scale == 'us')
 		{
-			factor = 2
+			factor = 1.5
 			minsize = 1
 		}
 		circlesize = Math.log2(num)*factor
