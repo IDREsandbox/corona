@@ -34,8 +34,8 @@ def the_scraper(url):
         print('Getting records for '+str(today) )
         print('======================')
         file_name = get_raw_data(url,today)
-        write_the_data_by_line(file_name,today)
         jhscraper()
+        write_the_data_by_line(file_name,today)
         time.sleep(86400)
         
 
