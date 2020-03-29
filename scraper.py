@@ -25,6 +25,11 @@ def write_file(variable_name,day,data,folder=False):
     target_location = "./data/"+folder+"/"+target_file
     target = open(target_location,"w")
     target.write(data)
+    if folder == "la":
+        with open(target_location, "a") as file_object:
+            # Append ']' at the end of file
+            file_object.write("]")
+            print('appending ] to LA file')
     return target_location
 
 # function for getting the url and time
@@ -61,7 +66,13 @@ def data_exporter(line,variable,today,pattern=False):
                 cleaned = data.replace("window."+variable+" = ",'')
                 cleaned += ""
                 file_list.append(write_file(variable,today,cleaned,folder="la"))
-                print(msg)     
+                print(msg)
+            elif variable == "SOCAL_CITY_TOTALS":
+                data = match.group(1)
+                cleaned = data.replace("window."+variable+" = ",'')
+                cleaned += ""
+                file_list.append(write_file(variable,today,cleaned,folder="socal"))
+                print(msg)                          
             elif variable == "LATIMES_CALIFORNIA_BY_DAY":
                 data = match.group(1)
                 cleaned = data.replace("window."+variable+" = ",'')
@@ -122,6 +133,7 @@ def write_the_data_by_line(file_name,today):
         data_exporter(line,'COUNTIES_TOTALS',today,pattern=r"window\.COUNTIES_TOTALS =.+?(?=:{\")(.*)};")
         data_exporter(line,'LATIMES_CALIFORNIA_BY_DAY',today,pattern=r"window\.LATIMES_CALIFORNIA_BY_DAY =.+?(?=\[)(.*)]")
         data_exporter(line,'LA_CITY_TOTALS',today,pattern=r"window\.LA_CITY_TOTALS =.+?(?=\[)(.*)]")
+        data_exporter(line,'SOCAL_CITY_TOTALS',today,pattern=r"window\.SOCAL_CITY_TOTALS =.+?(?=\[)(.*)]")
         data_exporter(line,'STATES',today,pattern=r"window.STATES =.+?(?=\[)(.*);")
 
     print('======================')
