@@ -25,11 +25,11 @@ def write_file(variable_name,day,data,folder=False):
     target_location = "./data/"+folder+"/"+target_file
     target = open(target_location,"w")
     target.write(data)
-    if folder == "la":
+    if folder == "la" or folder == "socal":
         with open(target_location, "a") as file_object:
             # Append ']' at the end of file
             file_object.write("]")
-            print('appending ] to LA file')
+            print('appending ] to LA/SOCAL file')
     return target_location
 
 # function for getting the url and time
