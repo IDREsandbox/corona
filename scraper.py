@@ -6,6 +6,28 @@ import time,os,sys,re
 import subprocess as cmd
 from git import Repo
 from jh import jhscraper, get_jh_data
+import smtplib, ssl
+from config import Config
+
+# send email
+def send_notification(destination,today):
+    port = Config.MAIL_PORT  # For SSL
+    password = Config.MAIL_PASSWORD
+    sender_email = Config.MAIL_USERNAME
+
+    # Create a secure SSL context
+    context = ssl.create_default_context()
+    account = Config.MAIL_USERNAME
+    server = Config.MAIL_SERVER
+
+    message = """\
+    Subject: Auto Update for """+today+"""
+
+    Data was sucessfully added to github today."""
+
+    with smtplib.SMTP_SSL(server, port, context=context) as server:
+        server.login(account, password)
+        server.sendmail(sender_email, destination, message)
 
 # function to get the data
 def get_raw_data(url,today):
@@ -41,6 +63,8 @@ def the_scraper(url):
         file_name = get_raw_data(url,today)
         jhscraper()
         write_the_data_by_line(file_name,today)
+        simple_date = datetime.today().strftime('%m_%d_%Y')
+        send_notification('albertk@gmx.com',simple_date)
         time.sleep(72000)
         the_scraper(url)
         
