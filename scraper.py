@@ -21,13 +21,16 @@ def send_notification(destination,today):
     server = Config.MAIL_SERVER
 
     message = """\
-    Subject: Auto Update for """+today+"""
+    Subject: Auto Update for {today}
 
     Data was sucessfully added to github today."""
-
+    
     with smtplib.SMTP_SSL(server, port, context=context) as server:
         server.login(account, password)
-        server.sendmail(sender_email, destination, message)
+        server.sendmail(sender_email, destination, message.format(today=today))
+    print('======================')
+    print('Notification email sent to '+destination)
+    print('======================')
 
 # function to get the data
 def get_raw_data(url,today):
