@@ -21,7 +21,7 @@ def send_notification(destination,today):
     server = Config.MAIL_SERVER
 
     message = """\
-    Subject: Auto Update for {today}
+    Subject: Auto Update for {today} \n\n
 
     Data was sucessfully added to github today."""
     
