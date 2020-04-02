@@ -10,7 +10,7 @@ import smtplib, ssl
 from config import Config
 
 # send email
-def send_notification(destination,today):
+def send_notification(destination,message):
     port = Config.MAIL_PORT  # For SSL
     password = Config.MAIL_PASSWORD
     sender_email = Config.MAIL_USERNAME
@@ -19,9 +19,7 @@ def send_notification(destination,today):
     context = ssl.create_default_context()
     account = Config.MAIL_USERNAME
     server = Config.MAIL_SERVER
-    SUBJECT = "Auto Update for {today}"
-    TEXT = "Data was sucessfully added to github today."
-    message = 'Subject: {}\n\n{}'.format(SUBJECT.format(today=today), TEXT)
+
 
     
     with smtplib.SMTP_SSL(server, port, context=context) as server:
@@ -65,8 +63,7 @@ def the_scraper(url):
         file_name = get_raw_data(url,today)
         jhscraper()
         write_the_data_by_line(file_name,today)
-        simple_date = datetime.today().strftime('%m_%d_%Y')
-        send_notification('albertk@gmx.com',simple_date)
+
         time.sleep(72000)
         the_scraper(url)
         
@@ -168,11 +165,28 @@ def write_the_data_by_line(file_name,today):
     print('======================')
     today = datetime.now()
     delta = timedelta(days=1)
-    github_commit(today)
     tmr = (today + delta).strftime("%a %m/%d at %H:%M:%S")
+    simple_date = datetime.today().strftime('%m-%d-%Y')
+    try:
+  
+        github_commit(today)
+
+        SUBJECT = "Auto Update for {today}"
+        TEXT = "Data was sucessfully added to github today. Next update is at {tmr}"
+        message = 'Subject: {}\n\n{}'.format(SUBJECT.format(today=simple_date), TEXT.format(tmr=tmr))
+        send_notification('albertk@gmx.com',simple_date,tmr)        
+    except:
+        SUBJECT = "FAILED Auto Update for {today}"
+        TEXT = "The update failed, please contact Albert."
+        message = 'Subject: {}\n\n{}'.format(SUBJECT.format(today=simple_date), TEXT)
+        send_notification('albertk@gmx.com',simple_date,tmr)
+    
     print('Now waiting 24 hours for next scrape on '+ tmr)
     print('======================')
-        
+    
+    
+
+
 # main application
 if __name__ == '__main__':
     url = 'https://www.latimes.com/projects/california-coronavirus-cases-tracking-outbreak/'
