@@ -19,12 +19,10 @@ def send_notification(destination,message):
     context = ssl.create_default_context()
     account = Config.MAIL_USERNAME
     server = Config.MAIL_SERVER
-
-
     
     with smtplib.SMTP_SSL(server, port, context=context) as server:
         server.login(account, password)
-        server.sendmail(sender_email, destination, message.format(today=today))
+        server.sendmail(sender_email, destination, message)
     print('======================')
     print('Notification email sent to '+destination)
     print('======================')
@@ -174,12 +172,12 @@ def write_the_data_by_line(file_name,today):
         SUBJECT = "Auto Update for {today}"
         TEXT = "Data was sucessfully added to github today. Next update is at {tmr}"
         message = 'Subject: {}\n\n{}'.format(SUBJECT.format(today=simple_date), TEXT.format(tmr=tmr))
-        send_notification('albertk@gmx.com',simple_date,tmr)        
+        send_notification('albertk@gmx.com',message)        
     except:
         SUBJECT = "FAILED Auto Update for {today}"
         TEXT = "The update failed, please contact Albert."
         message = 'Subject: {}\n\n{}'.format(SUBJECT.format(today=simple_date), TEXT)
-        send_notification('albertk@gmx.com',simple_date,tmr)
+        send_notification('albertk@gmx.com',message)
     
     print('Now waiting 24 hours for next scrape on '+ tmr)
     print('======================')
