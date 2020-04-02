@@ -19,11 +19,10 @@ def send_notification(destination,today):
     context = ssl.create_default_context()
     account = Config.MAIL_USERNAME
     server = Config.MAIL_SERVER
+    SUBJECT = "Auto Update for {today}"
+    TEXT = "Data was sucessfully added to github today."
+    message = 'Subject: {}\n\n{}'.format(SUBJECT.format(today=today), TEXT)
 
-    message = """\
-    Subject: Auto Update for {today} \n\n
-
-    Data was sucessfully added to github today."""
     
     with smtplib.SMTP_SSL(server, port, context=context) as server:
         server.login(account, password)
