@@ -40,16 +40,17 @@
 		global: ["https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv", "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"],
 		// global: ["https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv", "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv","https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv"],
 		la: ["./data/COVID19LA_confirmed.csv"],
-		us: ["https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-31-2020.csv",
-		"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-30-2020.csv",
-		"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-29-2020.csv",
-		"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-28-2020.csv",
-		"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-27-2020.csv",
-		"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-26-2020.csv",
-		"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-25-2020.csv",
-		"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-24-2020.csv",
-		"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-23-2020.csv",
-		"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-22-2020.csv"]
+		us: ["https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv","https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv"]
+		// us: ["https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-31-2020.csv",
+		// "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-30-2020.csv",
+		// "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-29-2020.csv",
+		// "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-28-2020.csv",
+		// "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-27-2020.csv",
+		// "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-26-2020.csv",
+		// "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-25-2020.csv",
+		// "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-24-2020.csv",
+		// "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-23-2020.csv",
+		// "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-22-2020.csv"]
 	}
 
 /***
@@ -133,7 +134,7 @@ corona.setGeo = function()
 		$('#btn-ca').prop('disabled',false)
 		$('#btn-la').prop('disabled',false)
 		$('#btn-us').prop('disabled',true)
-		corona.getUSData()
+		corona.getData()
 	}
 }
 
@@ -423,11 +424,14 @@ corona.getData = function()
 					// transpose data
 					if(typeof corona.data.confirmed.data !== 'undefined')
 					{
+						console.log('transposing confirmed data...')
 						corona.data.confirmed.max = getMaxData(corona.data.confirmed.data)
 						corona.transposeDataByDate(corona.data.confirmed)
 					}
-					if(typeof corona.data.deaths.data.length > 0)
+					console.log('death length '+corona.data.deaths.data.length)
+					if( corona.data.deaths.data.length > 0)
 					{
+						console.log('transposing death data...')
 						corona.data.deaths.max = getMaxData(corona.data.deaths.data)
 						corona.transposeDataByDate(corona.data.deaths)
 					}
@@ -489,7 +493,15 @@ corona.getHeaders=function()
 
 	// get the headers
 	const headers = []
-	for (var i = corona.data.confirmed.data[0].length - 1; i > 3; i--) {
+	// find the array position of the first date
+	var pos = corona.data.confirmed.data[0].indexOf('1/22/20')
+	if (corona.geo_scale == 'la')
+	{
+		pos = 4
+	}
+
+	// create headers for only the dates
+	for (var i = corona.data.confirmed.data[0].length - 1; i > pos-1; i--) {
 		headers.unshift(corona.data.confirmed.data[0][i])
 	}
 
@@ -506,10 +518,14 @@ corona.getHeaders=function()
 }
 corona.transposeDataByDate = function(data)
 {
+	// console.log(data)
+	// find the position for the first date in the array
+	var pos = data.data[0].indexOf('1/22/20')
+	console.log(pos)
 	for (var i = data.data[0].length - 1; i >= 0; i--) {
 		
 		// data is in the 4th column and beyond
-		if(i>3)
+		if(i>pos-1)
 		{
 			thisdate = data.data[0][i]
 			// create an object array for each date
@@ -517,16 +533,33 @@ corona.transposeDataByDate = function(data)
 
 			$.each(data.data,function(j,val){
 				thisarray = []
-				
-				// add the first couple of columns for place name and lat/lng
-				if(j>0)
+				// console.log(val)
+				// make sure the array is valid (more than one value)
+				if(val.length > 1)
 				{
-					for (var k = 3; k >= 0; k--) {
-						thisarray.unshift(val[k])
+					// skip the header row
+					if(j>0)
+					{
+						// for global add the first couple of columns for place name and lat/lng
+						if (corona.geo_scale == 'us')
+						{
+							var Combined_Key_pos = corona.data.confirmed.data[0].indexOf('Combined_Key')
+							var lat_pos = corona.data.confirmed.data[0].indexOf('Lat')
+							var lon_pos = corona.data.confirmed.data[0].indexOf('Long_')
+							thisarray = ['',val[Combined_Key_pos],val[lat_pos],val[lon_pos]]
+
+						}
+						else
+						{
+							for (var k = 3; k >= 0; k--) {
+								thisarray.unshift(val[k])
+							}
+						}
+						thisarray.push(val[i])
+						// add the 
+						data[thisdate].push(thisarray)
 					}
-					thisarray.push(val[i])
-					// add the 
-					data[thisdate].push(thisarray)
+
 				}
 
 			})
@@ -900,6 +933,7 @@ corona.getSparklineData = function(pos)
 
 corona.mapCoronaData = function(date)
 {
+	console.log(date)
 	corona.currentDate = date
 	$('#datedisplay').html('<h1>'+getTotalByDate(date)+'</h1>'+corona.data_label+' on '+date)
 	// get max of currrent date
@@ -914,9 +948,10 @@ corona.mapCoronaData = function(date)
 			corona.circles[i].remove()
 		}
 	}
+
 	// add circles
 	$.each(corona.data[corona.data_label][date],function(i,val){
-		// only map if it is a country
+		// only map if it has more than zero
 		if(val[4]>0)
 		{
 
