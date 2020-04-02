@@ -170,14 +170,14 @@ def write_the_data_by_line(file_name,today):
         github_commit(today)
 
         SUBJECT = "Auto Update for {today}"
-        TEXT = "Data was sucessfully added to github today. Next update is at {tmr}"
+        TEXT = "Data was sucessfully added to github today. \n Next update is at {tmr}"
         message = 'Subject: {}\n\n{}'.format(SUBJECT.format(today=simple_date), TEXT.format(tmr=tmr))
-        send_notification('albertk@gmx.com',message)        
+        send_notification('yohman@gmail.com',message)        
     except:
         SUBJECT = "FAILED Auto Update for {today}"
         TEXT = "The update failed, please contact Albert."
         message = 'Subject: {}\n\n{}'.format(SUBJECT.format(today=simple_date), TEXT)
-        send_notification('albertk@gmx.com',message)
+        send_notification('yohman@gmail.com',message)
     
     print('Now waiting 24 hours for next scrape on '+ tmr)
     print('======================')
