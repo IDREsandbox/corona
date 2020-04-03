@@ -62,7 +62,7 @@ def the_scraper(url):
         jhscraper()
         write_the_data_by_line(file_name,today)
 
-        time.sleep(72000)
+        time.sleep(86400)
         the_scraper(url)
         
 
