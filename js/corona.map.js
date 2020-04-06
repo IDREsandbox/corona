@@ -185,6 +185,8 @@ corona.startAnimation = function()
 	$('#btn-confirmed').prop('disabled',true)
 	$('#btn-deaths').prop('disabled',true)
 	$('#btn-play').prop('disabled',true)
+	$('#btn-proportional').prop('disabled',true)
+	$('#btn-log').prop('disabled',true)
 	// $('#btn-recovered').prop('disabled',true)
 
 	time = 200
@@ -200,6 +202,8 @@ corona.startAnimation = function()
 			var t = setTimeout(function(){
 				$('#btn-play').prop('disabled',false)
 				$('#btn-confirmed').prop('disabled',false)
+				$('#btn-proportional').prop('disabled',false)
+				$('#btn-log').prop('disabled',false)
 				// only enable if data exists
 				if(typeof corona.data['deaths'].data !== 'undefined')
 				{
@@ -286,7 +290,7 @@ corona.mapCoronaData = function(date)
 			};
 
 			corona.circles[i] = L.circleMarker([val[2], val[3]], circleStyle).addTo(corona.map);			
-			corona.circles[i].bindPopup('<h2 style="text-align:center;font-size:3em;">'+val[4]+'</h2><p style="text-align:center;padding:0px;margin:0px">Previous day: '+prev_day_value +' ('+percent_increase+'% increase)'+'</p><p style="text-align:center;font-size:1em;padding:0px;margin:0px">'+corona.data_label+' in '+val[0]+' '+val[1]+'</p>',{autoClose:false})
+			corona.circles[i].bindPopup('<h2 style="text-align:center;font-size:3em;">'+numberWithCommas(val[4])+'</h2><p style="text-align:center;padding:0px;margin:0px">Previous day: '+numberWithCommas(prev_day_value) +' ('+percent_increase+'% increase)'+'</p><p style="text-align:center;font-size:1em;padding:0px;margin:0px">'+corona.data_label+' in '+val[0]+' '+val[1]+'</p>',{autoClose:false})
 
 			corona.circles[i].on('mouseover',function(e){
 				corona.drawChart(val)
@@ -314,19 +318,37 @@ corona.mapCoronaData = function(date)
 function getProportionalCircleSize(num)
 {
 
-	var maxsize = 60
+	var maxsize = 200
 	var minsize = 2
 
 	if(corona.scale == 'proportional')
 	{
+		// In order to control the size of the circles, add a factor for each scale
+		// for this, larger factor is smaller circles
+		var factor = .1
+		if(corona.geo_scale == 'la')
+		{
+			factor = 1
+			maxsize = 100
+		}
+		else if(corona.geo_scale == 'us')
+		{
+			factor = 1
+			maxsize = 100
+		}
+		else if(corona.geo_scale == 'global')
+		{
+			factor = 1
+			maxsize = 200
+		}
 		// anything above this will be the same size
-		var max = corona.data[corona.data_label].max*.1
-
-
+		var max = corona.data[corona.data_label].max*factor
 		if(num>max){
 			num = max
 		}
 		circlesize = num*maxsize/max
+
+		// set min size of circle
 		if(circlesize < minsize)
 		{
 			circlesize = minsize
@@ -398,6 +420,15 @@ corona.changeDataLabel = function(label)
 	// corona.init()
 }
 
+
+// change circle size format (log vs proportional)
+corona.changeScale = function(scale)
+{
+	corona.scale = scale
+	corona.startAnimation()
+	// corona.init()
+}
+
 // find the max for any day in the data
 function getMaxData(data)
 {
@@ -454,7 +485,7 @@ function getTotalByDate(date)
 		}
 	})
 
-	return maxdata
+	return numberWithCommas(maxdata)
 }
 
 corona.sortedArray = []
@@ -499,7 +530,7 @@ function getRankingsByDate(date)
 				var place = val[1] + ', ' + val[0]
 			}
 
-			$('#rankingtable tbody').append('<tr onmouseover="corona.rankingMouseover('+i+')" onmouseout="corona.rankingMouseout('+i+')"><td>'+place+'</td><td align="right">'+val[4]+'</td><td align="right">'+deaths+'</td></tr>');
+			$('#rankingtable tbody').append('<tr onmouseover="corona.rankingMouseover('+i+')" onmouseout="corona.rankingMouseout('+i+')"><td>'+place+'</td><td align="right">'+numberWithCommas(val[4])+'</td><td align="right">'+deaths+'</td></tr>');
 			// $('#rankingtable tbody').append('<tr onmouseover="corona.rankingMouseover('+i+')" onmouseout="corona.rankingMouseout('+i+')"><td>'+place+'</td><td align="right">'+val[4]+'</td><td align="right">'+deaths+'</td><td align="right">'+recovered+'</td></tr>');
 		}
 	})
@@ -553,8 +584,6 @@ corona.getSparklineData = function(pos)
 	})
 	return sparkdata
 }
-
-
 
 corona.changeBaseMap = function(i)
 {
@@ -610,4 +639,15 @@ corona.drawChart = function(data)
 			right: 0
 		}
 	});
+}
+
+function numberWithCommas(x) {
+	if(typeof x !== 'undefined')
+	{
+    	return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+	}
+	else
+	{
+    	return x	
+	}
 }

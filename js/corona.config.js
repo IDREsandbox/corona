@@ -30,12 +30,12 @@
 	}
 	// corona.animate = false
 	corona.animate = true
-	corona.scale = 'log' // log | proportional
+	corona.scale = 'proportional' // log | proportional
 	corona.data_label = 'confirmed' // deaths | recovered
 	corona.circles = [] //placeholder for the circles
 	corona.currentDate = ''
 	corona.data.headers = []
-	corona.geo_scale = 'us' // global | la
+	corona.geo_scale = 'global' // global | us | la
 	corona.urls = {
 		global: ["https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv", "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"],
 		la: ["./data/COVID19LA_confirmed.csv"],
@@ -80,10 +80,15 @@ corona.setGeo = function()
 	const queryString = window.location.search;
 	const urlParams = new URLSearchParams(queryString);
 	const geo = urlParams.get('geo')
+	const scale = urlParams.get('scale')
 
 	if(geo !== null)
 	{
 		corona.geo_scale = geo
+	}
+	if(scale !== null)
+	{
+		corona.scale = scale
 	}
 
 	// change the data source based on the data and route to the right "get data" function
