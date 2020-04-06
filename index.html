@@ -24,21 +24,16 @@
 
 	<!-- google fonts -->
 	<link href="https://fonts.googleapis.com/css?family=Economica&display=swap" rel="stylesheet">
-
-
-<!--Plugin CSS file with desired skin-->
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/css/ion.rangeSlider.min.css"/>
 	
 	<!--jQuery-->
 	<script src="js/jquery.min.js"></script>
 	
 	<!--Plugin JavaScript file-->
+	<link rel="stylesheet" href="css/ion.rangeSlider.min.css"/>
 	<script src="js/ion.rangeSlider.min.js"></script>
-	<!-- jQuery -->
-	<!-- <script src="js/jquery-1.10.2.js"></script> -->
-	<script src="js/moment.js"></script>
+
+	<!-- papa parse for csv handling -->
 	<script src="js/papaparse.min.js"></script>
-	<script src="js/jquery.sparkline.min.js"></script>
 
 	<!-- bootstrap -->
 	<link href="css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
@@ -54,7 +49,11 @@
 </head>
 <body>
 
-<!-- map -->
+<!-- 
+
+	map display using bootstrap layout
+
+-->
 <div class="container-fluid h-100">
 	<div class="row h-100" >
 		<div class="col-sm-12 fill no-padding">
@@ -63,13 +62,15 @@
 	</div>
 </div>
 
-<!-- ucla oit logo -->
+<!-- 
 
+	ucla oit logo 
+	data sources
+
+-->
 <div id="logo" class="col-sm-2" id="data-panel" style="position: absolute;top:20px;left: 10px;background-color: rgba(255,255,255,0.8);z-index:999;">
-	<div><a href="http://ucla.edu" target="_blank"><img src="images/oit.png" width="100%" style="margin-left:-10px"></a></div>
-	<!-- <h2>UCLA </h2> -->
+	<div><a href="https://idre.ucla.edu/" target="_blank"><img src="images/oit.png" width="100%" style="margin-left:-10px"></a></div>
 	<div id="info-panel">
-		<!-- <a href="https://idre.ucla.edu/" target="_blank">UCLA IDRE</a> COVID-19 Maproom<br> -->
 		<button id="btn-global" class="btn btn-info btn-sm" onclick="window.location.href = '?geo=global'">Global</button>
 		<button id="btn-us" class="btn btn-info btn-sm" onclick="window.location.href = '?geo=us'">US</button>
 		<!-- <button id="btn-ca" class="btn btn-info btn-sm" onclick="window.location.href = '?geo=ca'">California</button> -->
@@ -84,33 +85,21 @@
 		</p>
 		<p style="background-color: white;padding:5px;">
 			<span id="last-updated"></span>
-<!-- 			<br>
-			<ul>
-				<li>use arrow keys to navigate time</li>
-				<li><span style="color:red">red</span> circles: high increase</li>
-				<li><span style="color:gray">white</span> circles: low increase</li>
-			</ul>
- -->		</p>
+		</p>
 	</div>
 </div> 
 
+<!-- 
 
-<!-- data display -->
+	small window data display 
+
+-->
 <div class="col-sm-2" align="center" style="position:absolute;left:10px; bottom:20px;z-index:999;">
 	<div align="center"  style=" background-color:rgba(255,255,255,0.7);padding:5px;">
-		<!-- <span id="spark">1,4,4,7,5,9,10</span> -->
 
 		<p style='text-align:center' id="datedisplay">Date</p>
 
-		<!-- <button type="button" class="btn btn-danger btn-sm" onclick="corona.animate()">play</button> -->
-
-
-<!-- 		<ul class="pagination pagination-sm  justify-content-center">
-			<li class="page-item active" id="btn-confirmed" onclick="corona.changeDataLabel('confirmed cases')"><a class="page-link" href="#">confirmed</a></li>
-			<li class="page-item" id="btn-deaths" onclick="corona.changeDataLabel('deaths')"><a class="page-link" href="#">deaths</a></li>
-		</ul>
- -->
-
+		<button id="btn-play" type="button" class="btn btn-danger btn-sm" onclick="corona.startAnimation()">play</button>
 	</div>
 	<div style="padding:5px;">
 
@@ -120,7 +109,11 @@
 	</div>
 </div>
 
-<!-- time bar -->
+<!-- 
+
+	animated time bar 
+
+-->
 <div class="row justify-content-md-center">
 	<div class="col-sm-8" align="center" style="position:absolute; top:20px;z-index:999;">
 		<div class="col-md-auto" style=" background-color:rgba(0,0,0,0.5);padding:10px;">
@@ -130,6 +123,11 @@
 	</div>
 </div>
 
+<!-- 
+
+	chart
+
+ -->
 <div id="chart-container" style="display:none;" class="row justify-content-md-center">
 	<div class="col-sm-8" align="center" style="position:absolute; bottom:20px;z-index:999;">
 		<div class="col-md-auto" style=" background-color:rgba(0,0,0,0.5);padding:10px;">
@@ -151,23 +149,29 @@
 	</div>
 </div>
 
-<!-- ranking display -->
+<!-- 
+
+	ranking display table
+
+-->
 <div id="rankingtable-container" class="col-sm-2" align="center" style="overflow:auto;opacity: 0.8; position:absolute;right:10px; bottom:20px;z-index:999;">
-	<!-- <div id="ranking" align="center"  style=" background-color:rgba(255,255,255,0.7);padding:5px;"> -->
-		<table id="rankingtable" class="table table-dark table-sm table-hover">
-			<tbody>
-				<tr>
-					<td></td>
-					<td>cases</td>
-					<td>deaths</td>
-					<!-- <td>recovered</td> -->
-				</tr>
-			</tbody>
-		</table>
-	<!-- </div> -->
+	<table id="rankingtable" class="table table-dark table-sm table-hover">
+		<tbody>
+			<tr>
+				<td></td>
+				<td>cases</td>
+				<td>deaths</td>
+				<!-- <td>recovered</td> -->
+			</tr>
+		</tbody>
+	</table>
 </div>
 
-<!-- Modal -->
+<!-- 
+
+	Modal with welcoming info
+
+ -->
 <div class="modal fade" id="coronamodal">
 	<div class="modal-dialog modal-dialog-centered" role="document">
 		<div class="modal-content">
@@ -185,8 +189,14 @@
 	</div>
 </div>
 
-	<!-- <script type="text/javascript" charset="utf8" src="data/data.json"></script> -->
-	<script type="text/javascript" charset="utf8" src="js/map.js"></script>
+<!--  
+
+	Javascript that does all the magic
+
+-->
+<script type="text/javascript" charset="utf8" src="js/corona.config.js"></script>
+<script type="text/javascript" charset="utf8" src="js/corona.data.js"></script>
+<script type="text/javascript" charset="utf8" src="js/corona.map.js"></script>
 
 
 </body>
