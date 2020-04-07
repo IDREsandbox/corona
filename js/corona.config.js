@@ -38,13 +38,14 @@
 	corona.geo_scale = 'global' // global | us | la
 	corona.urls = {
 		global: ["https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv", "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"],
-		la: ["./data/COVID19LA_confirmed.csv"],
+		// la: ["./data/COVID19LA_confirmed.csv"],
+		la: ["https://raw.githubusercontent.com/datadesk/california-coronavirus-data/master/latimes-place-totals.csv"],
 		us: ["https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv","https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv"]
 	}
 
 /***
 
-	Get the thing started!
+	Get this thing started!
 
 ***/
 $(document).ready(function() {
@@ -112,7 +113,7 @@ corona.setGeo = function()
 		$('#btn-us').prop('disabled',false)
 		// no death data in LA
 		$('#btn-deaths').hide()
-		corona.getData();
+		corona.getLAData();
 	}
 	else if (corona.geo_scale == 'ca')
 	{

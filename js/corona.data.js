@@ -80,6 +80,79 @@ corona.getData = function()
 	}
 }
 
+// global and Los Angeles
+corona.getLAData = function()
+{
+	// get the right data based on the geo requested
+	var urls = corona.urls[corona.geo_scale]
+
+	// for each data url, parse the csv and convert to JSON
+	for (var i = 0; i < urls.length; i++)
+	{
+		// papa parse is cool!
+		Papa.parse(urls[i], {
+			download: true,
+			error: function(err, file, inputElem, reason) { alert('Data is not loading properly. Please try again later. (debug:'+reason+')') },
+			step: function(row) {
+				console.log("row: ",row.data)
+			},
+			complete: function(results,url) {
+				allResults.push(results);
+				console.log("all done for url: ",url)
+				console.log(results)
+				// add data to object
+				if(url == urls[0])
+				{
+					corona.data.confirmed = results
+				}
+				else if (url == urls[1])
+				{
+					corona.data.deaths = results
+				}
+				// else if (url == urls[2])
+				// {
+				// 	corona.data.recovered = results
+				// }
+
+				// when all datasets are loaded, then...
+				if (allResults.length == urls.length)
+				{
+					// transpose data
+					if(typeof corona.data.confirmed.data !== 'undefined')
+					{
+						console.log('transposing confirmed data...')
+						corona.data.confirmed.max = getMaxData(corona.data.confirmed.data)
+						corona.transposeDataByDate(corona.data.confirmed)
+					}
+					console.log('death length '+corona.data.deaths.data.length)
+					if( corona.data.deaths.data.length > 0)
+					{
+						console.log('transposing death data...')
+						corona.data.deaths.max = getMaxData(corona.data.deaths.data)
+						corona.transposeDataByDate(corona.data.deaths)
+					}
+					// if(typeof corona.data.recovered.data !== 'undefined')
+					// {
+					// 	corona.data.recovered.max = getMaxData(corona.data.recovered.data)
+					// 	corona.transposeDataByDate(corona.data.recovered)
+					// }
+
+					corona.getHeaders()
+
+					if (typeof corona.map == 'undefined')
+					{
+						corona.setParameters()
+					}
+					else
+					{
+						corona.init()
+					}
+				}
+			}
+		});
+	}
+}
+
 // USA
 corona.getUSData = function()
 {
