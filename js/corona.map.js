@@ -280,6 +280,7 @@ corona.mapCoronaData = function(date)
 			}
 
 			var circleStyle = {
+				// "radius": 5,
 				"radius": getProportionalCircleSize(val[4]),
 				"color": "white",
 				"fillColor": fillColor,
@@ -290,6 +291,7 @@ corona.mapCoronaData = function(date)
 			};
 
 			corona.circles[i] = L.circleMarker([val[2], val[3]], circleStyle).addTo(corona.map);			
+			// corona.circles[i] = L.circleMarker([val[2], val[3]], circleStyle).addTo(corona.map);			
 			corona.circles[i].bindPopup('<h2 style="text-align:center;font-size:3em;">'+numberWithCommas(val[4])+'</h2><p style="text-align:center;padding:0px;margin:0px">Previous day: '+numberWithCommas(prev_day_value) +' ('+percent_increase+'% increase)'+'</p><p style="text-align:center;font-size:1em;padding:0px;margin:0px">'+corona.data_label+' in '+val[0]+' '+val[1]+'</p>',{autoClose:false})
 
 			corona.circles[i].on('mouseover',function(e){

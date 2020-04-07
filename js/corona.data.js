@@ -93,61 +93,79 @@ corona.getLAData = function()
 		Papa.parse(urls[i], {
 			download: true,
 			error: function(err, file, inputElem, reason) { alert('Data is not loading properly. Please try again later. (debug:'+reason+')') },
-			step: function(row) {
-				console.log("row: ",row.data)
-			},
+			// step: function(row) {
+			// 	console.log("row: ",row.data)
+			// },
 			complete: function(results,url) {
 				allResults.push(results);
+				corona.allResults = result
 				console.log("all done for url: ",url)
-				console.log(results)
-				// add data to object
-				if(url == urls[0])
-				{
-					corona.data.confirmed = results
-				}
-				else if (url == urls[1])
-				{
-					corona.data.deaths = results
-				}
-				// else if (url == urls[2])
-				// {
-				// 	corona.data.recovered = results
-				// }
+				// console.log(results)
 
-				// when all datasets are loaded, then...
-				if (allResults.length == urls.length)
+				var ladata_array = []
+
+				var ladata = results.data
+				// console.log(ladata)
+
+				// get distinct date
+				// var headers = []
+				//["date", "county", "fips", "place", "confirmed_cases", "note", "x", "y"]
+				var distinct_place = []
+				$.each(ladata,function(i,val){
+					if(i>0 && val[0] !=="" && corona.data.headers.indexOf(val[0]) < 0)
+					{
+						corona.data.headers.unshift(val[0])
+					}
+					if(val[6] !=="" && distinct_place.indexOf(val[3]) < 0 && typeof val[3] !== 'undefined')
+					{
+						distinct_place.push(val[3])
+						corona.data.confirmed.data.push([val[3],val[1],val[7],val[6]])
+					}
+				})
+
+				// loop through each header to create object array (empty for now)
+				$.each(corona.data.headers,function(i,val){
+					corona.data.confirmed[val]=[]
+					corona.data.confirmed.data[0].push(val) // also add to the master data
+				})
+
+				$.each(ladata,function(i,val){
+					// console.log(val)
+					// ladata_array.push([val[3],val[1],val[6],val[7],val[4]])
+					if(i>0 && val[6] !=="" && corona.data.headers.indexOf(val[0]) >= 0)
+					{
+						// console.log(val[0])
+						corona.data.confirmed[val[0]].push([val[3],val[1],val[7],val[6],val[4]])						
+					}
+
+					// now let's add the master data
+					if(i>0 && val[6] !=="") // not the header nor empty lat/lon
+					{
+						// find it by place
+						$.each(corona.data.confirmed.data,function(j,val2){
+							if(val2[0] == val[3]) // that should be a join
+							{
+								// data is for what date?
+								var pos = corona.data.headers.indexOf(val[0]) + 4
+								val2[pos] = val[4]
+							}
+						})
+						// corona.data.confirmed.data
+					}
+
+
+				})
+				console.log(corona.data.confirmed)
+				// console.log(ladata_array)
+				if (typeof corona.map == 'undefined')
 				{
-					// transpose data
-					if(typeof corona.data.confirmed.data !== 'undefined')
-					{
-						console.log('transposing confirmed data...')
-						corona.data.confirmed.max = getMaxData(corona.data.confirmed.data)
-						corona.transposeDataByDate(corona.data.confirmed)
-					}
-					console.log('death length '+corona.data.deaths.data.length)
-					if( corona.data.deaths.data.length > 0)
-					{
-						console.log('transposing death data...')
-						corona.data.deaths.max = getMaxData(corona.data.deaths.data)
-						corona.transposeDataByDate(corona.data.deaths)
-					}
-					// if(typeof corona.data.recovered.data !== 'undefined')
-					// {
-					// 	corona.data.recovered.max = getMaxData(corona.data.recovered.data)
-					// 	corona.transposeDataByDate(corona.data.recovered)
-					// }
-
-					corona.getHeaders()
-
-					if (typeof corona.map == 'undefined')
-					{
-						corona.setParameters()
-					}
-					else
-					{
-						corona.init()
-					}
+					corona.setParameters()
 				}
+				else
+				{
+					corona.init()
+				}
+
 			}
 		});
 	}
