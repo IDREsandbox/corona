@@ -75,7 +75,7 @@ corona.setParameters = function()
 			[33.247875947924385,-120.35247802734376],
 			[34.99175369350488,-115.95520019531251]  //Northeast
 		];
-		corona.map.setMaxBounds(laBounds)
+		// corona.map.setMaxBounds(laBounds)
 		corona.map.fitBounds(laBounds)
 		// corona.map.setZoom(10)
 
@@ -227,7 +227,6 @@ corona.startAnimation = function()
 ***/
 corona.mapCoronaData = function(date)
 {
-	console.log(date)
 	corona.currentDate = date
 	$('#datedisplay').html('<h1>'+getTotalByDate(date)+'</h1>'+corona.data_label+' on '+date)
 
@@ -247,30 +246,38 @@ corona.mapCoronaData = function(date)
 
 	// add circles
 	$.each(corona.data[corona.data_label][date],function(i,val){
-		console.log('ready to map size: '+val[4])
-		console.log('proportional size: '+getProportionalCircleSize(val[4]))
 		// only map if it has more than zero
 		if(val[4]>0)
 		{
 			// set the colors based on percent increase from previous day
 			prev_day_record = corona.getPreviousDataValue(i);
-			prev_day_value = prev_day_record[4]
+
+			// let's make sure a record exists the day before. if not, set to zero
+			if(prev_day_record == undefined)
+			{
+				prev_day_value = 0
+			}
+			else
+			{
+				prev_day_value = prev_day_record[4]
+			}
+
 			cur_day_value = val[4]
 			percent_increase = Math.round((cur_day_value- prev_day_value)/prev_day_value*100)
 
 			// color pallette from color brewer
 			// https://colorbrewer2.org/#type=sequential&scheme=Reds&n=4
-			if(percent_increase>30) //reddest
+			if(percent_increase>20) //reddest
 			{
 				fillColor = '#cb181d',
 				fillOpacity = 0.8
 			}
-			else if(percent_increase>20) //reddest
+			else if(percent_increase>10) //reddest
 			{
 				fillColor = '#fb6a4a',
 				fillOpacity = 0.6
 			}
-			else if (percent_increase>10) //medium red
+			else if (percent_increase>5) //medium red
 			{
 				fillColor = '#fcae91',
 				fillOpacity = 0.4
@@ -293,7 +300,6 @@ corona.mapCoronaData = function(date)
 			};
 
 			corona.circles[i] = L.circleMarker([val[2], val[3]], circleStyle).addTo(corona.map);			
-			// corona.circles[i] = L.circleMarker([val[2], val[3]], circleStyle).addTo(corona.map);			
 			corona.circles[i].bindPopup('<h2 style="text-align:center;font-size:3em;">'+numberWithCommas(val[4])+'</h2><p style="text-align:center;padding:0px;margin:0px">Previous day: '+numberWithCommas(prev_day_value) +' ('+percent_increase+'% increase)'+'</p><p style="text-align:center;font-size:1em;padding:0px;margin:0px">'+corona.data_label+' in '+val[0]+' '+val[1]+'</p>',{autoClose:false})
 
 			corona.circles[i].on('mouseover',function(e){
@@ -323,7 +329,7 @@ function getProportionalCircleSize(num)
 {
 
 	var maxsize = 200
-	var minsize = 4
+	var minsize = 2
 
 	if(corona.scale == 'proportional')
 	{
@@ -505,7 +511,7 @@ function getRankingsByDate(date)
 	$.each(corona.sortedArray,function(i,val){
 
 		// only show if value is gt 0
-		if(val[4]>0)
+		if(val[4]>0 && i < 100)
 		{
 			var deaths = '<span style="opacity:0.5">n/a</span>'
 			// var recovered = '<span style="opacity:0.5">n/a</span>'
@@ -543,6 +549,7 @@ function getRankingsByDate(date)
 var prev_opacity
 corona.rankingMouseover = function(i)
 {
+	console.log('mousing over...')
 	// pan to it
 	corona.map.panTo(corona.circles[i].getLatLng())
 	// highlight the circle on map
@@ -551,6 +558,8 @@ corona.rankingMouseover = function(i)
 	corona.circles[i].openPopup()
 
 	// draw corresponding chart
+	console.log('draw chart for pos '+i)
+	console.log(corona.sortedArray[i])
 	corona.drawChart(corona.sortedArray[i])
 
 }
@@ -623,12 +632,13 @@ corona.drawChart = function(data)
 	var thisplace = []
 	$.each(corona.data[corona.data_label].data,function(i,val){
 		// if(($.inArray(data[0],val)>=0))
-		if(($.inArray(data[1],val)>=0) && ($.inArray(data[0],val)>=0))
+		if(data[1]==val[1] && data[0]==val[0])
+		// if(($.inArray(data[1],val[1])>=0) && ($.inArray(data[0],val[0])>=0))
 		{
 			thisplace = val
 		}
 	})
-
+	console.log(thisplace)
 	// get rid of first 4 coloumns
 	// var datatochart = thisplace.slice(4,100000000000)
 	var datatochart = thisplace.slice(4,100000000000)

@@ -133,6 +133,7 @@ corona.setGeo = function()
 		$('#btn-ca').prop('disabled',false)
 		$('#btn-la').prop('disabled',false)
 		$('#btn-us').prop('disabled',true)
+		console.log('we are in the us...')
 		corona.getData()
 	}
 }

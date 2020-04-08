@@ -11,7 +11,7 @@ var confirmed = []
 var deaths = []
 
 
-// global and Los Angeles
+// us and global
 corona.getData = function()
 {
 	// get the right data based on the geo requested
@@ -26,8 +26,32 @@ corona.getData = function()
 			error: function(err, file, inputElem, reason) { alert('Data is not loading properly. Please try again later. (debug:'+reason+')') },
 			complete: function(results,url) {
 				allResults.push(results);
-				console.log(url)
 				// add data to object
+				/*
+					["UID", "iso2", "iso3", "code3", "FIPS", "Admin2", "Province_State", "Country_Region", "Lat", "Long_", "Combined_Key", "1/23/20", "1/23/20",
+					["Lat", "Long_", "Combined_Key", "Population", "1/23/20",
+				*/
+
+				if(corona.geo_scale == 'us')
+				{
+					function array_move(arr, old_index, new_index) {
+					    if (new_index >= arr.length) {
+					        var k = new_index - arr.length + 1;
+					        while (k--) {
+					            arr.push(undefined);
+					        }
+					    }
+					    arr.splice(new_index, 0, arr.splice(old_index, 1)[0]);
+					    return arr; // for testing
+					};
+					$.each(results.data,function(i,val){
+						val.splice(0,8)
+						val.splice(3,1)
+						array_move(val,2,0)
+						val.unshift('')
+					})
+				}
+
 				if(url == urls[0])
 				{
 					corona.data.confirmed = results
@@ -47,14 +71,11 @@ corona.getData = function()
 					// transpose data
 					if(typeof corona.data.confirmed.data !== 'undefined')
 					{
-						console.log('transposing confirmed data...')
 						corona.data.confirmed.max = getMaxData(corona.data.confirmed.data)
 						corona.transposeDataByDate(corona.data.confirmed)
 					}
-					console.log('death length '+corona.data.deaths.data.length)
 					if( corona.data.deaths.data.length > 0)
 					{
-						console.log('transposing death data...')
 						corona.data.deaths.max = getMaxData(corona.data.deaths.data)
 						corona.transposeDataByDate(corona.data.deaths)
 					}
@@ -93,32 +114,23 @@ corona.getLAData = function()
 		Papa.parse(urls[i], {
 			download: true,
 			error: function(err, file, inputElem, reason) { alert('Data is not loading properly. Please try again later. (debug:'+reason+')') },
-			// step: function(row) {
-			// 	console.log("row: ",row.data)
-			// },
 			complete: function(results,url) {
 				allResults.push(results);
 				corona.allResults = results
-				var new_results = []
+
 				// trim the data to only include data after 3/27/2020
+				var new_results = [] // temp holder array
 				$.each(results.data,function(i,val){
 					if(val[0]>'2020-03-26')
 					{
 						new_results.push(val)
 					}
 				})
-				console.log(new_results)
-
-				console.log("all done for url: ",url)
-				// console.log(results)
-
-				var ladata_array = []
 
 				var ladata = new_results
-				// console.log(ladata)
 
-				// get distinct date
-				// var headers = []
+				// get distinct date and add it to header
+				// also get distict places
 				//["date", "county", "fips", "place", "confirmed_cases", "note", "x", "y"]
 				var distinct_place = []
 				$.each(ladata,function(i,val){
@@ -126,25 +138,24 @@ corona.getLAData = function()
 					{
 						corona.data.headers.unshift(val[0])
 					}
+					// if place is new (not in distinct array) then add a new row to master data
 					if(val[6] !=="" && distinct_place.indexOf(val[3]) < 0 && typeof val[3] !== 'undefined')
 					{
 						distinct_place.push(val[3])
 						corona.data.confirmed.data.push([val[3],val[1],val[7],val[6]])
 					}
 				})
-				console.log(corona.data.headers)
 				// loop through each header to create object array (empty for now)
 				$.each(corona.data.headers,function(i,val){
 					corona.data.confirmed[val]=[]
-					corona.data.confirmed.data[0].push(val) // also add to the master data
+					corona.data.confirmed.data[0].push(val) // also add to the master data headers
 				})
 
+				// populate the data holders
 				$.each(ladata,function(i,val){
-					// console.log(val)
-					// ladata_array.push([val[3],val[1],val[6],val[7],val[4]])
+					// put the data in appropriate header table
 					if(i>0 && val[6] !=="" && corona.data.headers.indexOf(val[0]) >= 0)
 					{
-						// console.log(val[0])
 						corona.data.confirmed[val[0]].push([val[3],val[1],val[7],val[6],val[4]])						
 					}
 
@@ -160,14 +171,27 @@ corona.getLAData = function()
 								val2[pos] = val[4]
 							}
 						})
-						// corona.data.confirmed.data
 					}
-
-
 				})
-				console.log(corona.data.confirmed)
+
+				// clean the master data, ie. missing array fields should be zero (or null?)
+				var array_length_should_be = corona.data.confirmed.data[0].length
+				$.each(corona.data.confirmed.data,function(j,val){
+					for (var i = corona.data.confirmed.data[0].length - 1; i >= 0; i--) {
+						if(val[i] == undefined)
+						{
+							// found an empty value, set it to zero
+							val[i] = 0
+						}
+					}
+				})
+
 				corona.data.confirmed.max = getMaxData(corona.data.confirmed.data)
-				// console.log(ladata_array)
+
+				// update last updated
+				$('#last-updated').html('Last updated: '+corona.data.headers[corona.data.headers.length-1])
+
+
 				if (typeof corona.map == 'undefined')
 				{
 					corona.setParameters()
@@ -235,7 +259,7 @@ corona.getUSData = function()
 						deaths.push(deathrow)					
 					}
 				})
-
+				console.log(confirmed)
 				// add to corona data by date
 				corona.data.confirmed[header] = confirmed
 				corona.data.deaths[header] = deaths
@@ -425,10 +449,18 @@ corona.getHeaders=function()
 	// get the headers
 	const headers = []
 	// find the array position of the first date
-	var pos = corona.data.confirmed.data[0].indexOf('1/22/20')
+	var pos = ''
 	if (corona.geo_scale == 'la')
 	{
 		pos = 4
+	}
+	else if (corona.geo_scale == 'us')
+	{
+		pos = corona.data.confirmed.data[0].indexOf('1/23/20')
+	}
+	else if (corona.geo_scale == 'global')
+	{
+		pos = corona.data.confirmed.data[0].indexOf('1/22/20')
 	}
 
 	// create headers for only the dates
@@ -449,10 +481,24 @@ corona.getHeaders=function()
 }
 corona.transposeDataByDate = function(data)
 {
-	// console.log(data)
 	// find the position for the first date in the array
-	var pos = data.data[0].indexOf('1/22/20')
-	console.log(pos)
+	// var pos = data.data[0].indexOf('1/23/20')
+	var pos = ''
+	if (corona.geo_scale == 'la')
+	{
+		pos = 4
+	}
+	else if (corona.geo_scale == 'us')
+	{
+		pos = corona.data.confirmed.data[0].indexOf('1/23/20')
+	}
+	else if (corona.geo_scale == 'global')
+	{
+		pos = corona.data.confirmed.data[0].indexOf('1/22/20')
+	}
+
+
+
 	for (var i = data.data[0].length - 1; i >= 0; i--) {
 		
 		// data is in the 4th column and beyond
@@ -464,7 +510,6 @@ corona.transposeDataByDate = function(data)
 
 			$.each(data.data,function(j,val){
 				thisarray = []
-				// console.log(val)
 				// make sure the array is valid (more than one value)
 				if(val.length > 1)
 				{
