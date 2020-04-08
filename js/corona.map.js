@@ -72,10 +72,12 @@ corona.setParameters = function()
 	{
 
 		var laBounds = [
-			[33.247875947924385,-120.35247802734376],
-			[34.99175369350488,-115.95520019531251]  //Northeast
+			[31.732839253650067,-121.92626953125001],
+			[36.13787471840729,-114.74670410156251]  //Northeast
+			// [33.247875947924385,-120.35247802734376],
+			// [34.99175369350488,-115.95520019531251]  //Northeast
 		];
-		// corona.map.setMaxBounds(laBounds)
+		corona.map.setMaxBounds(laBounds)
 		corona.map.fitBounds(laBounds)
 		// corona.map.setZoom(10)
 
