@@ -247,6 +247,8 @@ corona.mapCoronaData = function(date)
 
 	// add circles
 	$.each(corona.data[corona.data_label][date],function(i,val){
+		console.log('ready to map size: '+val[4])
+		console.log('proportional size: '+getProportionalCircleSize(val[4]))
 		// only map if it has more than zero
 		if(val[4]>0)
 		{
@@ -321,7 +323,7 @@ function getProportionalCircleSize(num)
 {
 
 	var maxsize = 200
-	var minsize = 2
+	var minsize = 4
 
 	if(corona.scale == 'proportional')
 	{
@@ -331,7 +333,7 @@ function getProportionalCircleSize(num)
 		if(corona.geo_scale == 'la')
 		{
 			factor = 1
-			maxsize = 100
+			maxsize = 300
 		}
 		else if(corona.geo_scale == 'us')
 		{
@@ -541,6 +543,8 @@ function getRankingsByDate(date)
 var prev_opacity
 corona.rankingMouseover = function(i)
 {
+	// pan to it
+	corona.map.panTo(corona.circles[i].getLatLng())
 	// highlight the circle on map
 	prev_opacity = corona.circles[i].options.opacity
 	corona.circles[i].setStyle({weight:2,opacity:1})

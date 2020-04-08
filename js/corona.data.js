@@ -98,13 +98,23 @@ corona.getLAData = function()
 			// },
 			complete: function(results,url) {
 				allResults.push(results);
-				corona.allResults = result
+				corona.allResults = results
+				var new_results = []
+				// trim the data to only include data after 3/27/2020
+				$.each(results.data,function(i,val){
+					if(val[0]>'2020-03-26')
+					{
+						new_results.push(val)
+					}
+				})
+				console.log(new_results)
+
 				console.log("all done for url: ",url)
 				// console.log(results)
 
 				var ladata_array = []
 
-				var ladata = results.data
+				var ladata = new_results
 				// console.log(ladata)
 
 				// get distinct date
@@ -122,7 +132,7 @@ corona.getLAData = function()
 						corona.data.confirmed.data.push([val[3],val[1],val[7],val[6]])
 					}
 				})
-
+				console.log(corona.data.headers)
 				// loop through each header to create object array (empty for now)
 				$.each(corona.data.headers,function(i,val){
 					corona.data.confirmed[val]=[]
@@ -156,6 +166,7 @@ corona.getLAData = function()
 
 				})
 				console.log(corona.data.confirmed)
+				corona.data.confirmed.max = getMaxData(corona.data.confirmed.data)
 				// console.log(ladata_array)
 				if (typeof corona.map == 'undefined')
 				{

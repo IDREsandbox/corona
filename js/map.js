@@ -424,14 +424,11 @@ corona.getData = function()
 					// transpose data
 					if(typeof corona.data.confirmed.data !== 'undefined')
 					{
-						console.log('transposing confirmed data...')
 						corona.data.confirmed.max = getMaxData(corona.data.confirmed.data)
 						corona.transposeDataByDate(corona.data.confirmed)
 					}
-					console.log('death length '+corona.data.deaths.data.length)
-					if( corona.data.deaths.data.length > 0)
+					if(typeof corona.data.deaths.data.length > 0)
 					{
-						console.log('transposing death data...')
 						corona.data.deaths.max = getMaxData(corona.data.deaths.data)
 						corona.transposeDataByDate(corona.data.deaths)
 					}
@@ -495,10 +492,6 @@ corona.getHeaders=function()
 	const headers = []
 	// find the array position of the first date
 	var pos = corona.data.confirmed.data[0].indexOf('1/22/20')
-	if (corona.geo_scale == 'la')
-	{
-		pos = 4
-	}
 
 	// create headers for only the dates
 	for (var i = corona.data.confirmed.data[0].length - 1; i > pos-1; i--) {
@@ -518,7 +511,7 @@ corona.getHeaders=function()
 }
 corona.transposeDataByDate = function(data)
 {
-	// console.log(data)
+	console.log(data)
 	// find the position for the first date in the array
 	var pos = data.data[0].indexOf('1/22/20')
 	console.log(pos)
@@ -555,11 +548,11 @@ corona.transposeDataByDate = function(data)
 								thisarray.unshift(val[k])
 							}
 						}
-						thisarray.push(val[i])
-						// add the 
-						data[thisdate].push(thisarray)
 					}
-
+					thisarray.push(val[i])
+					// add the 
+					data[thisdate].push(thisarray)
+					
 				}
 
 			})
@@ -948,10 +941,10 @@ corona.mapCoronaData = function(date)
 			corona.circles[i].remove()
 		}
 	}
-
 	// add circles
 	$.each(corona.data[corona.data_label][date],function(i,val){
 		// only map if it has more than zero
+		console.log(val)
 		if(val[4]>0)
 		{
 
