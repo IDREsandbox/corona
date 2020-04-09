@@ -252,17 +252,7 @@ corona.mapCoronaData = function(date)
 		if(val[4]>0)
 		{
 			// set the colors based on percent increase from previous day
-			prev_day_record = corona.getPreviousDataValue(i);
-
-			// let's make sure a record exists the day before. if not, set to zero
-			if(prev_day_record == undefined)
-			{
-				prev_day_value = 0
-			}
-			else
-			{
-				prev_day_value = prev_day_record[4]
-			}
+			prev_day_value = corona.getPreviousDataValue(date,val);
 
 			cur_day_value = val[4]
 			percent_increase = Math.round((cur_day_value- prev_day_value)/prev_day_value*100)
@@ -290,6 +280,14 @@ corona.mapCoronaData = function(date)
 				fillOpacity = 0.2		
 			}
 
+			// find deaths
+			$.each(corona.data['deaths'][date],function(j,dval){
+				if(val[0] == dval[0] && val[1] == dval[1] && val[2] == dval[2])
+				{
+					deaths = dval[4]
+				}
+			})
+
 			var circleStyle = {
 				// "radius": 5,
 				"radius": getProportionalCircleSize(val[4]),
@@ -301,8 +299,29 @@ corona.mapCoronaData = function(date)
 				"data": val
 			};
 
+
 			corona.circles[i] = L.circleMarker([val[2], val[3]], circleStyle).addTo(corona.map);			
-			corona.circles[i].bindPopup('<h2 style="text-align:center;font-size:3em;">'+numberWithCommas(val[4])+'</h2><p style="text-align:center;padding:0px;margin:0px">Previous day: '+numberWithCommas(prev_day_value) +' ('+percent_increase+'% increase)'+'</p><p style="text-align:center;font-size:1em;padding:0px;margin:0px">'+corona.data_label+' in '+val[0]+' '+val[1]+'</p>',{autoClose:false})
+			if(deaths > 0)
+			{
+				var circleStyleDeaths = {
+					// "radius": 5,
+					"radius": getProportionalCircleSize(deaths),
+					"color": "white",
+					"fillColor": "red",
+					"weight": 1,
+					"opacity": .9,
+					"fillOpacity": .9,
+					"data": val
+				};
+				// corona.circles_deaths[i] = L.circleMarker([val[2], val[3]], circleStyleDeaths).addTo(corona.map);			
+
+				corona.circles[i].bindPopup('<h1 style="text-align:center;">'+numberWithCommas(val[4])+' </h1><p style="text-align:center;font-size:1.2em">'+deaths+' deaths' + '</p><p style="text-align:center;padding:0px;margin:0px">Previous day: '+numberWithCommas(prev_day_value) +' ('+percent_increase+'% increase)'+'</p><p style="text-align:center;font-size:1em;padding:0px;margin:0px">'+corona.data_label+' in '+val[0]+' '+val[1]+'</p>',{autoClose:false})
+			}
+			else
+			{
+				corona.circles[i].bindPopup('<h1 style="text-align:center;">'+numberWithCommas(val[4])+'</h2><p style="text-align:center;padding:0px;margin:0px">Previous day: '+numberWithCommas(prev_day_value) +' ('+percent_increase+'% increase)'+'</p><p style="text-align:center;font-size:1em;padding:0px;margin:0px">'+corona.data_label+' in '+val[0]+' '+val[1]+'</p>',{autoClose:false})
+			}
+
 
 			corona.circles[i].on('mouseover',function(e){
 				corona.drawChart(val)
@@ -560,8 +579,6 @@ corona.rankingMouseover = function(i)
 	corona.circles[i].openPopup()
 
 	// draw corresponding chart
-	console.log('draw chart for pos '+i)
-	console.log(corona.sortedArray[i])
 	corona.drawChart(corona.sortedArray[i])
 
 }
@@ -573,19 +590,29 @@ corona.rankingMouseout = function(i)
 	corona.circles[i].closePopup()
 }
 
-corona.getPreviousDataValue = function(pos)
+corona.getPreviousDataValue = function(date,data)
 {
+
+	// find this place in arrays by place
+	$.each(corona.data[corona.data_label].data,function(i,val){
+		if(data[1]==val[1] && data[0]==val[0])
+		{
+			thisplace = val
+		}
+	})
+
 	// find where in the array the current date is
-	const cur = corona.data.headers.indexOf(corona.currentDate)
+	var cur = corona.data.headers.indexOf(corona.currentDate)
 	if (cur > 0)
 	{
-		const prev = cur -1
-		const prev_date = corona.data.headers[prev]
-		return corona.data[corona.data_label][prev_date][pos]
+		var prev = cur -1
+		var prev_date = corona.data.headers[prev]
+		var pos_in_master_data = prev+4 //because place data has other headers
+		return thisplace[pos_in_master_data]
 	}
 	else
 	{
-		return false
+		return 0
 	}
 }
 
@@ -640,7 +667,6 @@ corona.drawChart = function(data)
 			thisplace = val
 		}
 	})
-	console.log(thisplace)
 	// get rid of first 4 coloumns
 	// var datatochart = thisplace.slice(4,100000000000)
 	var datatochart = thisplace.slice(4,100000000000)

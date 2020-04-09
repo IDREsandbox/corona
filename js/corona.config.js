@@ -33,6 +33,7 @@
 	corona.scale = 'proportional' // log | proportional
 	corona.data_label = 'confirmed' // deaths | recovered
 	corona.circles = [] //placeholder for the circles
+	corona.circles_deaths = [] //placeholder for the circles
 	corona.currentDate = ''
 	corona.data.headers = []
 	corona.geo_scale = 'global' // global | us | la
