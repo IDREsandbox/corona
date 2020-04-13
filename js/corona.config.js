@@ -29,7 +29,7 @@
 		}
 	}
 	// corona.animate = false
-	corona.animate = false
+	corona.animate = true
 	corona.scale = 'proportional' // log | proportional
 	corona.data_label = 'confirmed' // deaths | recovered
 	corona.circles = [] //placeholder for the circles
