@@ -646,6 +646,7 @@ corona.changeGeo = function(geo)
 
 corona.drawChart = function(data)
 {
+	console.log('drawing chart...')
 	if(data[0] == '')
 	{
 		var thistitle = data[1]
@@ -659,30 +660,85 @@ corona.drawChart = function(data)
 	$('#chart-container').show();
 
 	var thisplace = []
+	var datasets = []
 	$.each(corona.data[corona.data_label].data,function(i,val){
-		// if(($.inArray(data[0],val)>=0))
+
+		var label = val[1]+' '+val[0]
 		if(data[1]==val[1] && data[0]==val[0])
-		// if(($.inArray(data[1],val[1])>=0) && ($.inArray(data[0],val[0])>=0))
 		{
 			thisplace = val
+			datatochart = thisplace.slice(4,100000000000)
+			datasets.unshift({
+	            label: label,
+	            borderColor: 'red',
+	            data: datatochart
+	        })
 		}
+		// else
+		// {
+		// 	thisplace = val
+		// 	datatochart = thisplace.slice(4,100000000000)
+		// 	datasets.push({
+	 //            label: label,
+	 //            borderColor: 'darkgrey',
+	 //            data: datatochart
+	 //        })
+		// }
 	})
+
+
+	// $.each(corona.data[corona.data_label].data,function(i,val){
+	// 	// if(($.inArray(data[0],val)>=0))
+	// 	if(data[1]==val[1] && data[0]==val[0])
+	// 	// if(($.inArray(data[1],val[1])>=0) && ($.inArray(data[0],val[0])>=0))
+	// 	{
+	// 		thisplace = val
+	// 	}
+	// })
 	// get rid of first 4 coloumns
 	// var datatochart = thisplace.slice(4,100000000000)
 	var datatochart = thisplace.slice(4,100000000000)
-	new Chartist.Line('.ct-chart', {
-		// labels: corona.data.headers,
-		series: [
-			datatochart
-			// [1,2,3,3,3,4,5]
-		]
-		}, {
-			fullWidth: true,
-			height: 100,
-			chartPadding: {
-			right: 0
-		}
-	});
+	// new Chartist.Line('.ct-chart', {
+	// 	// labels: corona.data.headers,
+	// 	series: [
+	// 		datatochart
+	// 		// [1,2,3,3,3,4,5]
+	// 	]
+	// 	}, {
+	// 		fullWidth: true,
+	// 		height: 100,
+	// 		chartPadding: {
+	// 		right: 0
+	// 	}
+	// });
+	$('#chart').empty()
+	var ctx = document.getElementById('chart').getContext('2d');
+	var myChart = new Chart(ctx, {
+	    type: 'line',
+	    data: {
+	        labels: corona.data.headers,
+	        datasets: datasets
+	        // datasets: [{
+	        //     label: 'confirmed cases',
+	        //     borderColor: 'red',
+	        //     data: datatochart
+	        // }]
+	    },
+	    options: {
+	    	legend: false,
+		    animation: {
+				duration: 0 // general animation time
+			},
+			hover: {
+				animationDuration: 0 // duration of animations when hovering an item
+			},
+			responsiveAnimationDuration: 0 // animation duration after a resize
+
+	    }
+	})
+
+
+
 }
 
 function numberWithCommas(x) {

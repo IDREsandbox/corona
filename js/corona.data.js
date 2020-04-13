@@ -121,7 +121,7 @@ corona.getLAData = function()
 				// trim the data to only include data after 3/27/2020
 				var new_results = [] // temp holder array
 				$.each(results.data,function(i,val){
-					if(val[0]>'2020-03-26')
+					if(val[0]>'2020-03-16')
 					{
 						new_results.push(val)
 					}
@@ -145,6 +145,10 @@ corona.getLAData = function()
 						corona.data.confirmed.data.push([val[3],val[1],val[7],val[6]])
 					}
 				})
+
+				// sort the headers because they don't necessarily come in order (it's an ajax thing)
+				corona.data.headers.sort()
+
 				// loop through each header to create object array (empty for now)
 				$.each(corona.data.headers,function(i,val){
 					corona.data.confirmed[val]=[]
